@@ -24,7 +24,7 @@ unit OpenSSL.Core;
 interface
 
 uses
-  System.Classes, System.SysUtils, IdSSLOpenSSLHeaders, OpenSSL.libeay32;
+  System.Classes, System.SysUtils, ssl_types;
 
 type
   TRASPadding = (
@@ -71,6 +71,9 @@ function Base64Decode(InputBuffer :TBytes) :TBytes;
 
 implementation
 
+uses
+  ssl_bio, ssl_const, ssl_err, ssl_evp, ssl_rand, OpenSSL.LibEay32;
+
 function Base64Encode(InputBuffer :TBytes) :TBytes;
 var
   bio, b64 :PBIO;
@@ -85,7 +88,7 @@ begin
   BIO_flush(b64);
 
   bdata := nil;
-  datalen :=  OpenSSL.libeay32.BIO_get_mem_data(bio, @bdata);
+  datalen := BIO_get_mem_data(bio, @bdata);
   SetLength(Result, datalen);
   Move(bdata^, Result[0], datalen);
 

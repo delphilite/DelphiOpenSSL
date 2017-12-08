@@ -28,8 +28,8 @@ unit OpenSSL.EncUtils;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.AnsiStrings, Generics.Collections,
-  OpenSSL.libeay32, OpenSSL.Core, IdSSLOpenSSLHeaders;
+  System.SysUtils, System.Classes, System.SyncObjs, Generics.Collections,
+  ssl_types, OpenSSL.Core;
 
 type
   TCipherName = string;
@@ -41,8 +41,16 @@ type
     Proc :TCipherProc;
   end;
 
-  TCipherList = class(TThreadList<TCipherInfo>)
+  TCipherList = class(TList<TCipherInfo>)
+  private
+    FLock: TCriticalSection;
+  private
+    function LockList: TCipherList;
+    procedure UnlockList;
   public
+    constructor Create; overload;
+    destructor Destroy; override;
+
     function Count :Integer;
     function GetProc(const Name :TCipherName) :TCipherProc;
   end;
@@ -84,6 +92,9 @@ type
   end;
 
 implementation
+
+uses
+  ssl_const, ssl_evp;
 
 { TEncUtil }
 
@@ -145,11 +156,11 @@ begin
 
     SetLength(OutputBuffer, InputStream.Size);
     BuffStart := 0;
-    if OpenSSL.libeay32.EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
+    if EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
       RaiseOpenSSLError('Cannot decrypt');
     Inc(BuffStart, OutputLen);
 
-    if OpenSSL.libeay32.EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
+    if EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
       RaiseOpenSSLError('Cannot finalize decryption process');
     Inc(BuffStart, OutputLen);
 
@@ -211,11 +222,11 @@ begin
     else
       SetLength(OutputBuffer, Length(InputBuffer) + BlockSize);
 
-    if EVP_EncryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[0], Length(InputBuffer)) <> 1 then
+    if EVP_EncryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[0], Length(InputBuffer)) <> 1 then
       RaiseOpenSSLError('Cannot encrypt');
     Inc(BuffStart, OutputLen);
 
-    if EVP_EncryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> 1 then
+    if EVP_EncryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
       RaiseOpenSSLError('Cannot finalize encryption process');
     Inc(BuffStart, OutputLen);
     SetLength(OutputBuffer, BuffStart);
@@ -439,6 +450,20 @@ begin
   end;
 end;
 
+constructor TCipherList.Create;
+begin
+  inherited Create;
+
+  FLock := TCriticalSection.Create;
+end;
+
+destructor TCipherList.Destroy;
+begin
+  FreeAndNil(FLock);
+
+  inherited;
+end;
+
 function TCipherList.GetProc(const Name: TCipherName): TCipherProc;
 var
   CipherInfo :TCipherInfo;
@@ -453,6 +478,17 @@ begin
   finally
     UnlockList;
   end;
+end;
+
+function TCipherList.LockList: TCipherList;
+begin
+  FLock.Enter;
+  Result := Self;
+end;
+
+procedure TCipherList.UnlockList;
+begin
+  FLock.Leave;
 end;
 
 end.

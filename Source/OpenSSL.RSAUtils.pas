@@ -19,13 +19,13 @@
 {  limitations under the License.                                              }
 {                                                                              }
 {******************************************************************************}
+
 unit OpenSSL.RSAUtils;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, System.AnsiStrings, OpenSSL.libeay32,
-  OpenSSL.Core, IdSSLOpenSSLHeaders;
+  System.SysUtils, System.Classes, ssl_types, OpenSSL.Core;
 
 type
   TX509Cerificate = class;
@@ -112,6 +112,15 @@ type
 
 implementation
 
+uses
+  ssl_bio, ssl_evp, ssl_pem, ssl_rsa, ssl_x509, OpenSSL.LibEay32;
+
+const
+  RSA_PKCS1_PADDING      = 1;
+  RSA_SSLV23_PADDING     = 2;
+  RSA_NO_PADDING         = 3;
+  RSA_PKCS1_OAEP_PADDING = 4;
+
 { TRSA }
 
 const
@@ -120,6 +129,18 @@ const
 // rwflag is a flag set to 0 when reading and 1 when writing
 // The u parameter has the same value as the u parameter passed to the PEM routines
 function ReadKeyCallback(buf: PAnsiChar; buffsize: integer; rwflag: integer; u: pointer): integer; cdecl;
+
+  function StrLCopy(Dest: PAnsiChar; const Source: PAnsiChar; MaxLen: Cardinal): PAnsiChar;
+  var
+    Len: Cardinal;
+  begin
+    Result := Dest;
+    Len := StrLen(Source);
+    if Len > MaxLen then
+      Len := MaxLen;
+    Move(Source^, Dest^, Len * SizeOf(AnsiChar));
+    Dest[Len] := #0;
+  end;
 var
   Len :Integer;
   Password :string;
@@ -136,7 +157,7 @@ begin
         Len := Length(Password)
       else
         Len := buffsize;
-      System.AnsiStrings.StrPLCopy(buf, AnsiString(Password), Len);
+      StrPLCopy(buf, AnsiString(Password), Len);
       Result := Len;
     end;
   end;
@@ -406,7 +427,7 @@ end;
 procedure TRSAPrivateKey.LoadFromStream(AStream: TStream);
 var
   KeyBuffer :pBIO;
-  cb : ppem_password_cb;
+  cb : pem_password_cb;
 begin
   cb := nil;
 
