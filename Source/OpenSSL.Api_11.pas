@@ -27940,15 +27940,15 @@ end;
 
 function SSL_is_fatal_error(const AErrorCode: Integer): Boolean;
 begin
-	case AErrorCode of
-		SSL_ERROR_NONE,
-		SSL_ERROR_WANT_READ,
-		SSL_ERROR_WANT_WRITE,
-		SSL_ERROR_WANT_CONNECT,
-		SSL_ERROR_WANT_ACCEPT: Result := False;
+  case AErrorCode of
+    SSL_ERROR_NONE,
+    SSL_ERROR_WANT_READ,
+    SSL_ERROR_WANT_WRITE,
+    SSL_ERROR_WANT_CONNECT,
+    SSL_ERROR_WANT_ACCEPT: Result := False;
   else
     Result := True;
-	end;
+  end;
 end;
 
 function SSL_CTX_set_session_cache_mode(ctx: PSSL_CTX; mode: Integer): Integer;

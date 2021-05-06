@@ -112,7 +112,7 @@ end;
 
 function BIO_get_mem_data(b: PBIO; pp: Pointer): Integer;
 begin
-  Result := BIO_ctrl(b,BIO_CTRL_INFO,0,pp);
+  Result := BIO_ctrl(b, BIO_CTRL_INFO, 0, pp);
 end;
 
 function BIO_to_string(b: PBIO; Encoding: TEncoding): string;
@@ -155,12 +155,10 @@ end;
 
 function LastOpenSSLError: string;
 var
-  E: Integer;
-  ErrMsg: PAnsiChar;
+  ErrCode: Integer;
 begin
-  E := ERR_get_error;
-  ErrMsg := ERR_error_string(E, nil);
-  Result := string(AnsiString(ErrMsg));
+  ErrCode := ERR_get_error;
+  Result := SSL_error(ErrCode);
 end;
 
 procedure RaiseOpenSSLError(const AMessage: string);
@@ -169,7 +167,7 @@ var
   ErrMsg, FullMsg: string;
 begin
   ErrCode := ERR_get_error;
-  ErrMsg := string(AnsiString(ERR_error_string(ErrCode, nil)));
+  ErrMsg := SSL_error(ErrCode);
   if AMessage = '' then
     FullMsg := ErrMsg
   else FullMsg := AMessage + ': ' + ErrMsg;

@@ -27,7 +27,6 @@ uses
   OpenSSL.Api_11 in '..\..\Source\OpenSSL.Api_11.pas',
   OpenSSL.Core in '..\..\Source\OpenSSL.Core.pas',
   OpenSSL.EncUtils in '..\..\Source\OpenSSL.EncUtils.pas',
-  OpenSSL.Libeay32 in '..\..\Source\OpenSSL.Libeay32.pas',
   OpenSSL.RandUtils in '..\..\Source\OpenSSL.RandUtils.pas',
   OpenSSL.RSAUtils in '..\..\Source\OpenSSL.RSAUtils.pas',
   OpenSSL.SMIMEUtils in '..\..\Source\OpenSSL.SMIMEUtils.pas',

@@ -6,7 +6,6 @@ uses
 
   OpenSSL.Api_11 in '..\..\Source\OpenSSL.Api_11.pas',
   OpenSSL.Core in '..\..\Source\OpenSSL.Core.pas',
-  OpenSSL.Libeay32 in '..\..\Source\OpenSSL.Libeay32.pas',
   OpenSSL.DSAUtils in '..\..\Source\OpenSSL.DSAUtils.pas',
 
   MainFrm in 'MainFrm.pas' {MainForm};
@@ -14,6 +13,7 @@ uses
 {$R *.res}
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TMainForm, MainForm);
