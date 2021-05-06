@@ -27,40 +27,27 @@ interface
 uses
   System.SysUtils, OpenSSL.Api_11;
 
-const
-  SALT_MAGIC: AnsiString  = 'Salted__';
-  SALT_MAGIC_LEN: Integer = 8;
-  SALT_SIZE               = 8;
-
 type
-  TRSAPadding = (
-    rpPKCS,           // use PKCS#1 v1.5 padding (default),
-    rpOAEP,           // use PKCS#1 OAEP
-    rpSSL,            // use SSL v2 padding
-    rpRAW             // use no padding
-  );
+  EOpenSSL = class(Exception);
 
-  EOpenSSLError = Exception;
-
-  EOpenSSLLibError = class(EOpenSSLError)
+  EOpenSSLError = class(EOpenSSL)
   private
     FErrorCode: Integer;
   public
     constructor Create(Code: Integer; const Msg: string);
-    property ErrorCode: Integer read FErrorCode;
+
+    property  ErrorCode: Integer read FErrorCode;
   end;
 
-  TOpenSLLBase = class
-  private
-    class constructor Create;
+  TOpenSLLBase = class(TObject)
   public
     constructor Create; virtual;
   end;
 
-  function  Base64Encode(InputBuffer: TBytes): TBytes;
-  function  Base64Decode(InputBuffer: TBytes): TBytes;
+  function  Base64Encode(const InputBuffer: TBytes): TBytes;
+  function  Base64Decode(const InputBuffer: TBytes): TBytes;
 
-  function  BIO_flush(b : PBIO): Integer;
+  function  BIO_flush(b: PBIO): Integer;
   function  BIO_get_mem_data(b: PBIO; pp: Pointer): Integer;
   function  BIO_to_string(b: PBIO; Encoding: TEncoding): string; overload;
   function  BIO_to_string(b: PBIO): string; overload;
@@ -70,16 +57,12 @@ type
   { Password will be encoded in UTF-8 if you want another encodig use the TBytes version }
   procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
-  procedure OPENSSL_free(address: Pointer);
-
-  function  GetOpenSSLErrorMessage: string;
+  function  LastOpenSSLError: string;
   procedure RaiseOpenSSLError(const AMessage: string = '');
 
 implementation
 
-
-
-function Base64Encode(InputBuffer: TBytes): TBytes;
+function Base64Encode(const InputBuffer: TBytes): TBytes;
 var
   bio, b64: PBIO;
   bdata: Pointer;
@@ -100,7 +83,7 @@ begin
   BIO_free_all(b64);
 end;
 
-function Base64Decode(InputBuffer: TBytes): TBytes;
+function Base64Decode(const InputBuffer: TBytes): TBytes;
 var
   bio, b64: PBIO;
   datalen: Integer;
@@ -170,16 +153,13 @@ begin
   EVP_GetKeyIV(TEncoding.UTF8.GetBytes(APassword), ACipher, ASalt, Key, IV);
 end;
 
-procedure OPENSSL_free(address: Pointer);
-begin
-  CRYPTO_free(address, nil, 0);
-end;
-
-function GetOpenSSLErrorMessage: string;
+function LastOpenSSLError: string;
 var
+  E: Integer;
   ErrMsg: PAnsiChar;
 begin
-  ErrMsg := ERR_error_string(ERR_get_error, nil);
+  E := ERR_get_error;
+  ErrMsg := ERR_error_string(E, nil);
   Result := string(AnsiString(ErrMsg));
 end;
 
@@ -192,26 +172,20 @@ begin
   ErrMsg := string(AnsiString(ERR_error_string(ErrCode, nil)));
   if AMessage = '' then
     FullMsg := ErrMsg
-  else
-    FullMsg := AMessage + ': ' + ErrMsg;
-  raise EOpenSSLLibError.Create(ErrCode, FullMsg);
+  else FullMsg := AMessage + ': ' + ErrMsg;
+  raise EOpenSSLError.Create(ErrCode, FullMsg);
 end;
 
 { TOpenSLLBase }
-
-class constructor TOpenSLLBase.Create;
-begin
-  ERR_load_crypto_strings();
-end;
 
 constructor TOpenSLLBase.Create;
 begin
   inherited;
 end;
 
-{ EOpenSSLLibError }
+{ EOpenSSLError }
 
-constructor EOpenSSLLibError.Create(Code: Integer; const Msg: string);
+constructor EOpenSSLError.Create(Code: Integer; const Msg: string);
 begin
   FErrorCode := Code;
   inherited Create(Msg);

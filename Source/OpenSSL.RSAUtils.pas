@@ -28,12 +28,24 @@ uses
   System.SysUtils, System.Classes, OpenSSL.Core, OpenSSL.Api_11;
 
 type
+  TRSAPadding = (
+    rpPKCS,           // use PKCS#1 v1.5 padding (default),
+    rpOAEP,           // use PKCS#1 OAEP
+    rpSSL,            // use SSL v2 padding
+    rpRAW             // use no padding
+  );
+
+  TPublicKeyFormat = (
+    kfDefault, kfRSAPublicKey
+  );
+
+  TPrivateKeyFormat = (
+    kpDefault, kpRSAPrivateKey
+  );
+
   TX509Cerificate = class;
 
   TPassphraseEvent = procedure (Sender: TObject; var Passphrase: string) of object;
-
-  TPublicKeyFormat = (kfDefault, kfRSAPublicKey);
-  TPrivateKeyFormat = (kpDefault, kpRSAPrivateKey);
 
   // RSA public key
   TCustomRSAPublicKey = class(TOpenSLLBase)
@@ -154,8 +166,6 @@ type
 
 implementation
 
-
-
 type
   TRSAKeyPairPrivateKey = class(TCustomRSAPrivateKey)
   private
@@ -204,7 +214,6 @@ begin
     end;
   end;
 end;
-
 
 procedure TRSAUtil.PublicEncrypt(InputStream, OutputStream: TStream; Padding: TRSAPadding);
 var
@@ -449,7 +458,7 @@ end;
 
 procedure TCustomRSAPrivateKey.LoadFromStream(AStream: TStream; AFormat: TPrivateKeyFormat = kpDefault);
 begin
-  raise EOpenSSLError.Create('Cannot load private key');
+  raise EOpenSSL.Create('Cannot load private key');
 end;
 
 function TCustomRSAPrivateKey.Print: string;
@@ -505,7 +514,7 @@ begin
         KeyLength := BIO_pending(PrivateKey);
       end;
       else
-        raise EOpenSSLError.Create('Invalid format');
+        raise EOpenSSL.Create('Invalid format');
     end;
 
     SetLength(Buffer, KeyLength);
@@ -553,7 +562,7 @@ end;
 
 procedure TCustomRSAPublicKey.LoadFromStream(AStream: TStream; AFormat: TPublicKeyFormat);
 begin
-  raise EOpenSSLError.Create('Cannot load private key');
+  raise EOpenSSL.Create('Cannot load private key');
 end;
 
 function TCustomRSAPublicKey.Print: string;
@@ -610,7 +619,7 @@ begin
         KeyLength := BIO_pending(PublicKey);
       end;
       else
-        raise EOpenSSLError.Create('Invalid format');
+        raise EOpenSSL.Create('Invalid format');
     end;
 
     SetLength(Buffer, KeyLength);
@@ -744,7 +753,7 @@ begin
           RaiseOpenSSLError('RSA load private key error');
       end;
       else
-        raise EOpenSSLError.Create('Invalid format');
+        raise EOpenSSL.Create('Invalid format');
     end;
 
   finally
@@ -827,7 +836,7 @@ begin
           RaiseOpenSSLError('RSA load public key error');
       end;
       else
-        raise EOpenSSLError.Create('Invalid format');
+        raise EOpenSSL.Create('Invalid format');
     end;
   finally
     BIO_free(KeyBuffer);

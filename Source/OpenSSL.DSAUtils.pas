@@ -28,10 +28,7 @@ uses
   System.SysUtils, System.Classes, OpenSSL.Core, OpenSSL.Api_11;
 
 type
-  TDSACerificate = class;
-
-  TDSAPassphraseEvent = procedure (Sender: TObject; var Passphrase: string) of object;
-
+  // DSA base key
   TDSAKey = class(TOpenSLLBase)
   public
     function  IsValid: Boolean; virtual; abstract;
@@ -44,7 +41,6 @@ type
   private
     FBuffer: TBytes;
     FDSA: PDSA;
-    FCerificate: TDSACerificate;
   private
     function  GetDSA: PDSA;
     procedure FreeDSA;
@@ -56,7 +52,6 @@ type
     function  IsValid: Boolean; override;
     procedure LoadFromFile(const FileName: string); override;
     procedure LoadFromStream(AStream: TStream); override;
-    procedure LoadFromCertificate(Cerificate: TDSACerificate);
   end;
 
   // DSA private key
@@ -64,7 +59,6 @@ type
   private
     FBuffer: TBytes;
     FDSA: PDSA;
-    FOnNeedPassphrase: TDSAPassphraseEvent;
   private
     function  GetDSA: PDSA;
     procedure FreeDSA;
@@ -76,7 +70,6 @@ type
     function  Print: string;
     procedure LoadFromFile(const FileName: string); override;
     procedure LoadFromStream(AStream: TStream); override;
-    property  OnNeedPassphrase: TDSAPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
   end;
 
   // Certificate containing an DSA public key
@@ -117,46 +110,6 @@ type
   end;
 
 implementation
-
-uses
-  OpenSSL.Libeay32;
-
-// rwflag is a flag set to 0 when reading and 1 when writing
-// The u parameter has the same value as the u parameter passed to the PEM routines
-function ReadKeyCallback(buf: PAnsiChar; buffsize: Integer; rwflag: Integer; u: Pointer): Integer; cdecl;
-
-  function StrLCopy(Dest: PAnsiChar; const Source: PAnsiChar; MaxLen: Cardinal): PAnsiChar;
-  var
-    Len: Cardinal;
-  begin
-    Result := Dest;
-    Len := StrLen(Source);
-    if Len > MaxLen then
-      Len := MaxLen;
-    Move(Source^, Dest^, Len * SizeOf(AnsiChar));
-    Dest[Len] := #0;
-  end;
-var
-  Len: Integer;
-  Password: string;
-  PrivateKey: TDSAPrivateKey;
-begin
-  Result := 0;
-  if Assigned(u) then
-  begin
-    PrivateKey := TDSAPrivateKey(u);
-    if Assigned(PrivateKey.FOnNeedPassphrase) then
-    begin
-      PrivateKey.FOnNeedPassphrase(PrivateKey, Password);
-      if Length(Password) < buffsize then
-        Len := Length(Password)
-      else
-        Len := buffsize;
-      StrPLCopy(buf, AnsiString(Password), Len);
-      Result := Len;
-    end;
-  end;
-end;
 
 { TDSAUtil }
 
@@ -463,20 +416,12 @@ end;
 
 function TDSAPublicKey.GetDSA: PDSA;
 begin
-  if Assigned(FCerificate) then
-    Result := FCerificate.GetPublicDSA
-  else
-    Result := FDSA;
+  Result := FDSA;
 end;
 
 function TDSAPublicKey.IsValid: Boolean;
 begin
   Result := GetDSA <> nil;
-end;
-
-procedure TDSAPublicKey.LoadFromCertificate(Cerificate: TDSACerificate);
-begin
-  FCerificate := Cerificate;
 end;
 
 procedure TDSAPublicKey.LoadFromFile(const FileName: string);

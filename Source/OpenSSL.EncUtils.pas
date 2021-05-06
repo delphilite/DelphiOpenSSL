@@ -105,6 +105,11 @@ type
 
 implementation
 
+const
+  SALT_MAGIC: AnsiString  = 'Salted__';
+  SALT_MAGIC_LEN: Integer = 8;
+  SALT_SIZE               = 8;
+
 { TEncUtil }
 
 procedure TEncUtil.Decrypt(InputStream, OutputStream: TStream);
@@ -146,7 +151,7 @@ begin
     if (AnsiString(TEncoding.ASCII.GetString(InputBuffer, 0, SALT_MAGIC_LEN)) = SALT_MAGIC) then
     begin
       if Length(FPassphrase.FValue) = 0 then
-        raise EOpenSSLError.Create('Password needed');
+        raise EOpenSSL.Create('Password needed');
 
       Move(InputBuffer[SALT_MAGIC_LEN], Salt[0], SALT_SIZE);
       EVP_GetKeyIV(FPassphrase.FValue, Cipher, Salt, Key, InitVector);
@@ -165,7 +170,7 @@ begin
     InputStart := 0;
   end
   else
-    raise EOpenSSLError.Create('Password needed');
+    raise EOpenSSL.Create('Password needed');
 
   Context := EVP_CIPHER_CTX_new();
   if Context = nil then
@@ -229,7 +234,7 @@ begin
     InitVector := FPassphrase.FInitVector;
   end
   else
-    raise EOpenSSLError.Create('Password needed');
+    raise EOpenSSL.Create('Password needed');
 
   SetLength(InputBuffer, InputStream.Size);
   InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
@@ -404,7 +409,7 @@ procedure TEncUtil.SetCipher(const Value: TCipherName);
 begin
   FCipherProc := FCipherList.GetProc(Value);
   if @FCipherProc = nil then
-    raise EOpenSSLError.CreateFmt('Cipher not found: "%s"', [Value]);
+    raise EOpenSSL.CreateFmt('Cipher not found: "%s"', [Value]);
   FCipher := Value;
 end;
 
