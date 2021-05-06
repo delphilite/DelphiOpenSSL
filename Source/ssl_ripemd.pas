@@ -1,6 +1,7 @@
 unit ssl_ripemd;
 
 interface
+
 uses ssl_types;
 
 var
@@ -13,6 +14,7 @@ var
 procedure SSL_Initripemd;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_Initripemd;

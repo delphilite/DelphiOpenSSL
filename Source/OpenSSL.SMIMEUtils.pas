@@ -33,7 +33,7 @@ uses
 type
   TSMIMEUtil = class(TOpenSLLBase)
   public
-    function Decrypt(InputStream, OutputStream :TStream; Verify, NoVerify: Boolean): Integer;
+    function Decrypt(InputStream, OutputStream: TStream; Verify, NoVerify: Boolean): Integer;
   end;
 
 implementation

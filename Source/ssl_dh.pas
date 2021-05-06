@@ -1,6 +1,7 @@
 unit ssl_dh;
 
 interface
+
 uses ssl_types;
 var
   d2i_DHparams_fp: function(var fp: FILE; var x: PAnsiChar): PDH; cdecl = nil;
@@ -45,13 +46,13 @@ procedure SSL_InitDH;
 procedure EVP_PKEY_assign_DH(key: PEVP_PKEY; _dh: PDH); inline;
 
 implementation
+
 uses ssl_lib, ssl_evp, ssl_const;
 
 procedure EVP_PKEY_assign_DH(key: PEVP_PKEY; _dh: PDH); inline;
 begin
   EVP_PKEY_assign(key, EVP_PKEY_DH, _dh);
 end;
-
 
 procedure SSL_InitDH;
 begin

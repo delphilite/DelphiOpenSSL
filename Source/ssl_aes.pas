@@ -1,6 +1,7 @@
 unit ssl_aes;
 
 interface
+
 uses ssl_types;
 
 var
@@ -26,6 +27,7 @@ var
 procedure SSL_InitAES;
 
 implementation
+
 uses ssl_lib;
 procedure SSL_InitAES;
 begin

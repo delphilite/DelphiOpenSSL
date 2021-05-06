@@ -1,6 +1,7 @@
 unit ssl_cmac;
 
 interface
+
 uses ssl_types;
 var
   CMAC_CTX_new: function: PCMAC_CTX; cdecl = nil;
@@ -16,6 +17,7 @@ var
 procedure SSL_InitCMAC;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitCMAC;

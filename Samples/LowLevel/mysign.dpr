@@ -55,7 +55,6 @@ begin
     Move(P[1], buf^, Result);
 end;
 
-
 begin
   try
     { TODO -oUser -cConsole Main : Insert code here }
@@ -91,7 +90,6 @@ begin
     finally
       BIO_free(bp);
     end;
-
 
     EVP_SignInit(@md_ctx, EVP_sha384);
     SSL_CheckError;

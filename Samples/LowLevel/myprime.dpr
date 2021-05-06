@@ -4,7 +4,6 @@ program myprime;
 
 {$R *.res}
 
-
 uses
   System.SysUtils,
 

@@ -1,6 +1,7 @@
 {$i ssl.inc}
 unit ssl_pkcs7;
 interface
+
 uses ssl_types;
 var
 	PKCS7_ISSUER_AND_SERIAL_new: function: PPKCS7_ISSUER_AND_SERIAL; cdecl = nil;
@@ -132,6 +133,7 @@ var
 procedure SSL_InitPKCS7;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitPKCS7;

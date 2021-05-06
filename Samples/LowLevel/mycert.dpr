@@ -56,7 +56,6 @@ begin
     Move(P[1], buf^, Result);
 end;
 
-
 procedure keycallback(p, n: TC_INT; arg: Pointer); cdecl;
 var c: AnsiString;
 begin

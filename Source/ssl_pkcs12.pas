@@ -1,5 +1,6 @@
 unit ssl_pkcs12;
 interface
+
 uses ssl_types;
 var
 	
@@ -82,6 +83,7 @@ var
 procedure SSL_InitPKCS12;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitPKCS12;

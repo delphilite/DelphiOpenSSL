@@ -1,6 +1,7 @@
 unit ssl_util;
 
 interface
+
 uses ssl_types, ssl_asn;
 var
   CRYPTO_malloc : function(num: TC_INT; const _file: PAnsiChar; line: TC_INT): Pointer cdecl = nil;
@@ -8,8 +9,7 @@ var
   CRYPTO_free : procedure(ptr : Pointer) cdecl = nil;
   CRYPTO_malloc_init: procedure; cdecl = nil;
   CRYPTO_set_mem_functions:function (_malloc: CRYPTO_mem_alloc_func; _realloc: CRYPTO_mem_realloc_func; _free: CRYPTO_mem_free_func): TC_INT; cdecl = nil;
-  fCRYPTO_lock: procedure(_mode: TC_INT; _type: TC_INT; _file:  PAnsiChar; line: TC_INT); cdecl = nil;
-
+  fCRYPTO_lock: procedure(_mode: TC_INT; _type: TC_INT; _file : PAnsiChar; line: TC_INT); cdecl = nil;
 
   OPENSSL_gmtime: function(var timer: TC_time_t; var time: tm): tm; cdecl = nil;
 
@@ -32,6 +32,7 @@ function ASN1ToDateTime(a: PASN1_TIME): TDateTime;
 function DateTimeToASN1(ADateTime: TDateTime): PASN1_TIME;
 
 implementation
+
 uses ssl_lib, ssl_const, SysUtils, ssl_err, ssl_objects, Math;
 
 function _CR_alloc(_size: TC_SIZE_T): Pointer; cdecl;
@@ -49,7 +50,6 @@ begin
   FreeMem(_mem);
 end;
 
-
 procedure SSL_InitUtil;
 begin
  if @CRYPTO_malloc = nil then
@@ -64,7 +64,6 @@ begin
     @OPENSSL_gmtime := LoadFunctionCLib('OPENSSL_gmtime', False);
   end;
 end;
-
 
 function OpenSSL_malloc(iSize: TC_INT): Pointer;
 begin
@@ -186,7 +185,6 @@ begin
  Result := GeneralizedTimeToDateTime(gt.data);
 end;
 
-
 function DateTimeToASN1(ADateTime: TDateTime): PASN1_TIME;
 begin
   Result := ASN1_TIME_new;
@@ -194,5 +192,4 @@ begin
 end;
 
 end.
-
 

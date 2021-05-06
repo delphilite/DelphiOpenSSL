@@ -1,6 +1,7 @@
 unit ssl_dsa;
 
 interface
+
 uses ssl_types;
 
 type TDSACallback = procedure(p1, p2: TC_INT; p3: Pointer); cdecl;
@@ -52,13 +53,13 @@ procedure EVP_PKEY_assign_DSA(key: PEVP_PKEY; dsa: PDSA); inline;
 procedure SSL_InitDSA;
 
 implementation
+
 uses ssl_lib, ssl_evp, ssl_const;
 
 procedure EVP_PKEY_assign_DSA(key: PEVP_PKEY; dsa: PDSA); inline;
 begin
   EVP_PKEY_assign(key, EVP_PKEY_DSA, dsa);
 end;
-
 
 procedure SSL_InitDSA;
 begin
@@ -102,6 +103,5 @@ begin
     @ERR_load_DSA_strings:= LoadFunctionCLib('ERR_load_DSA_strings');
   end;
 end;
-
 
 end.

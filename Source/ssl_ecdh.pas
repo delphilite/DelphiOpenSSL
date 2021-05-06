@@ -1,6 +1,7 @@
 unit ssl_ecdh;
 
 interface
+
 uses ssl_types;
 var
 	ECDH_OpenSSL: function: PECDH_METHOD; cdecl = nil;
@@ -17,10 +18,10 @@ var
 
 	ERR_load_ECDH_strings: procedure; cdecl = nil;
 
-
 procedure SSL_InitSSLDH;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitSSLDH;

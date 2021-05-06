@@ -1,6 +1,7 @@
 unit ssl_des;
 
 interface
+
 uses ssl_types;
 
 var
@@ -15,7 +16,6 @@ var
   DES_xcbc_encrypt: procedure(input: PAnsiChar;output: PAnsiChar; _length: TC_LONG;schedule: PDES_key_schedule;ivec: PDES_cblock; inw: Pconst_DES_cblock;outw: Pconst_DES_cblock;enc: TC_INT); cdecl = nil;
   DES_cfb_encrypt: procedure(_in: PAnsiChar;_out: PAnsiChar;numbits: TC_INT; _length: TC_LONG;schedule: PDES_key_schedule;ivec: PDES_cblock; enc: TC_INT); cdecl = nil;
   DES_ecb_encrypt: procedure(input: Pconst_DES_cblock;output: PDES_cblock; ks: PDES_key_schedule;enc: TC_INT); cdecl = nil;
-
 
   DES_encrypt2: procedure(data: PDES_LONG;ks: PDES_key_schedule; enc: TC_INT); cdecl = nil;
   DES_encrypt3: procedure(data: PDES_LONG; ks1: PDES_key_schedule; ks2: PDES_key_schedule; ks3: PDES_key_schedule); cdecl = nil;
@@ -57,10 +57,10 @@ var
   DES_read_password: function(key: PDES_cblock; prompt: PAnsiChar; verify: TC_INT): TC_INT; cdecl = nil;
   DES_read_2passwords: function(key1: PDES_cblock; key2: PDES_cblock; prompt: PAnsiChar; verify: TC_INT): TC_INT; cdecl = nil;
 
-
 procedure SSL_InitDES;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitDES;

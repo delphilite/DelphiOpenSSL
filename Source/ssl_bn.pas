@@ -1,6 +1,7 @@
 unit ssl_bn;
 
 interface
+
 uses ssl_types;
 
 var
@@ -44,8 +45,8 @@ var
    BN_mod_sqr: function(r: PBIGNUM; a: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
    BN_mod_lshift1: function(r: PBIGNUM; a: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
    BN_mod_lshift1_quick: function(r: PBIGNUM; a: PBIGNUM; m: PBIGNUM): TC_INT; cdecl = nil;
-   BN_mod_lshift: function(r: PBIGNUM; a: PBIGNUM; n: TC_INT; m :PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
-   BN_mod_lshift_quick: function(r: PBIGNUM; a: PBIGNUM; n: TC_INT; m :PBIGNUM): TC_INT; cdecl = nil;
+   BN_mod_lshift: function(r: PBIGNUM; a: PBIGNUM; n: TC_INT; m: PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
+   BN_mod_lshift_quick: function(r: PBIGNUM; a: PBIGNUM; n: TC_INT; m: PBIGNUM): TC_INT; cdecl = nil;
    BN_mod_word: function(a: PBIGNUM; w: BN_ULONG): BN_ULONG; cdecl = nil;
    BN_div_word: function(a: PBIGNUM; w: BN_ULONG): BN_ULONG; cdecl = nil;
    BN_mul_word: function(a: PBIGNUM; w: BN_ULONG): TC_INT; cdecl = nil;
@@ -59,12 +60,12 @@ var
    BN_lshift: function(r: PBIGNUM; a: PBIGNUM; n: TC_INT): TC_INT; cdecl = nil;
    BN_lshift1: function(r: PBIGNUM; a: PBIGNUM): TC_INT; cdecl = nil;
    BN_exp: function(r: PBIGNUM; a: PBIGNUM; p: BIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
-   BN_mod_exp: function(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM;	m :PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
-   BN_mod_exp_mont: function(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM;	m :PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TC_INT; cdecl = nil;
+   BN_mod_exp: function(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM;	m: PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
+   BN_mod_exp_mont: function(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM;	m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TC_INT; cdecl = nil;
    BN_mod_exp_mont_consttime: function(rr: PBIGNUM; a: PBIGNUM; p: PBIGNUM; m: PBIGNUM; ctx: PBN_CTX; in_mont: PBN_MONT_CTX): TC_INT; cdecl = nil;
-   BN_mod_exp_mont_word: function(r: PBIGNUM; a: TC_ULONG; p: PBIGNUM;	m :PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TC_INT; cdecl = nil;
+   BN_mod_exp_mont_word: function(r: PBIGNUM; a: TC_ULONG; p: PBIGNUM;	m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TC_INT; cdecl = nil;
    BN_mod_exp2_mont: function(r: PBIGNUM; a1: PBIGNUM; p1: PBIGNUM; a2: PBIGNUM; p2: BIGNUM; m: PBIGNUM; ctx: PBN_CTX; m_ctx: PBN_MONT_CTX): TC_INT; cdecl = nil;
-   BN_mod_exp_simple: function(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM;	m :PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
+   BN_mod_exp_simple: function(r: PBIGNUM; a: PBIGNUM; p: PBIGNUM;	m: PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
    BN_mask_bits: function(a: PBIGNUM; n: TC_INT): TC_INT; cdecl = nil;
    BN_print_fp: function(var fp: FILE; a: PBIGNUM): TC_INT; cdecl = nil;
    BN_print: function(fp: PBIO; a: PBIGNUM): TC_INT; cdecl = nil;
@@ -131,7 +132,7 @@ var
    BN_RECP_CTX_set: function(recp: PBN_RECP_CTX;const rdiv: PBIGNUM;ctx: PBN_CTX): TC_INT; cdecl = nil;
    BN_mod_mul_reciprocal: function(r: PBIGNUM; x: PBIGNUM; y: PBIGNUM; recp: PBN_RECP_CTX;ctx: PBN_CTX): TC_INT; cdecl = nil;
    BN_mod_exp_recp: function(r: PBIGNUM; const a: PBIGNUM; const p: PBIGNUM; const m: PBIGNUM; ctx: PBN_CTX): TC_INT; cdecl = nil;
-   BN_div_recp: function(dv: PBIGNUM; rem :PBIGNUM; const m: PBIGNUM;	recp: PBN_RECP_CTX; ctx: PBN_CTX): TC_INT; cdecl = nil;
+   BN_div_recp: function(dv: PBIGNUM; rem: PBIGNUM; const m: PBIGNUM;	recp: PBN_RECP_CTX; ctx: PBN_CTX): TC_INT; cdecl = nil;
 
    BN_GF2m_add: function(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TC_INT; cdecl = nil;
    BN_GF2m_sub: function(r: PBIGNUM; a: PBIGNUM; b: PBIGNUM): TC_INT; cdecl = nil;
@@ -172,7 +173,6 @@ var
 
   RAND_pseudo_bytes: function(buf: PAnsiChar; num: TC_INT): TC_INT; cdecl = nil;
 
-
   bn_mul_add_words: function(rp: PBN_ULONG; const ap: PBN_ULONG; num: TC_INT; w: BN_ULONG): BN_ULONG; cdecl = nil;
   bn_mul_words: function(rp: PBN_ULONG; const ap: PBN_ULONG; num: TC_INT; w: BN_ULONG): BN_ULONG; cdecl = nil;
   bn_div_words: function(h: BN_ULONG; l: BN_ULONG; d: BN_ULONG): BN_ULONG; cdecl = nil;
@@ -191,12 +191,9 @@ var
 
   ERR_load_BN_strings: procedure; cdecl = nil;
 
-
 function BN_num_bytes(a: PBIGNUM): TC_INT;
 
 procedure SSL_InitBN;
-
-
 
 implementation
 

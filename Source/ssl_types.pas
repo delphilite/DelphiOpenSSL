@@ -69,13 +69,12 @@ type
   PEVP_PKEY_ASN1_METHOD = ^EVP_PKEY_ASN1_METHOD;
   PPEVP_PKEY_ASN1_METHOD = ^PEVP_PKEY_ASN1_METHOD;
 
-
   STACK = record
     num : TC_INT;
     data : PPAnsiChar;
     sorted : TC_INT;
     num_alloc : TC_INT;
-    comp : function (_para1: PPAnsiChar; _para2: PPAnsiChar):  TC_INT; cdecl;
+    comp : function (_para1: PPAnsiChar; _para2: PPAnsiChar) : TC_INT; cdecl;
   end;
 
   STACK_OF = record
@@ -189,7 +188,6 @@ type
 
 {$ENDREGION}
 
-
 {$REGION 'ERR'}
 
   ERR_STATE = record
@@ -214,7 +212,6 @@ type
   PERR_FNS = Pointer;
 
 {$ENDREGION}
-
 
 {$REGION 'BN'}
   BIGNUM = record
@@ -319,7 +316,6 @@ type
 
 {$REGION 'CAST'}
 
-
   CAST_LONG = TC_UINT;
   PCAST_LONG = ^CAST_LONG;
 
@@ -405,7 +401,6 @@ type
       clear_free_func: procedure(_par: Pointer); cdecl;
   end;
 
-
   EC_GROUP = record
     meth: PEC_METHOD;
     generator: PEC_POINT;
@@ -427,7 +422,6 @@ type
 
   EC_builtin_curves = array[0..0] of EC_builtin_curve;
   PEC_builtin_curves = ^EC_builtin_curves;
-
 
   PEC_KEY = ^EC_KEY;
   PPEC_KEY = ^PEC_KEY;
@@ -457,9 +451,7 @@ type
   EC_free_func = procedure(par: Pointer); cdecl;
   EC_clear_free_func = procedure(par: Pointer); cdecl;
 
-
 {$ENDREGION}
-
 
   PSTACK_OF_IPAddressFamily = PSTACK;
   PSTACK_OF_ASN1_TYPE = PSTACK; // may be ^
@@ -475,15 +467,12 @@ type
   PSTACK_OF_CONF_VALUE = PSTACK;
   PPSTACK_OF_CONF_VALUE = ^PSTACK_OF_CONF_VALUE;
 
-
-
   BIT_STRING_BITNAME = record
     bitnum : TC_INT;
     lname : PAnsiChar;
     sname : PAnsiChar;
   end;
   PBIT_STRING_BITNAME = ^BIT_STRING_BITNAME;
-
 
 {$REGION 'BIO'}
   PBIO = ^BIO;
@@ -612,16 +601,16 @@ type
 
   ASN1_TYPE = record
     case Integer of
-      0:  (ptr: PAnsiChar);
-      1:  (boolean: ASN1_BOOLEAN);
-      2:  (asn1_string: PASN1_STRING);
-      3:  (_object: PASN1_OBJECT);
-      4:  (integer: PASN1_INTEGER);
-      5:  (enumerated: PASN1_ENUMERATED);
-      6:  (bit_string: PASN1_BIT_STRING);
-      7:  (octet_string: PASN1_OCTET_STRING);
-      8:  (printablestring: PASN1_PRINTABLESTRING);
-      9:  (t61string: PASN1_T61STRING);
+      0 : (ptr: PAnsiChar);
+      1 : (boolean: ASN1_BOOLEAN);
+      2 : (asn1_string: PASN1_STRING);
+      3 : (_object: PASN1_OBJECT);
+      4 : (integer: PASN1_INTEGER);
+      5 : (enumerated: PASN1_ENUMERATED);
+      6 : (bit_string: PASN1_BIT_STRING);
+      7 : (octet_string: PASN1_OCTET_STRING);
+      8 : (printablestring: PASN1_PRINTABLESTRING);
+      9 : (t61string: PASN1_T61STRING);
       10: (ia5string: PASN1_IA5STRING);
       11: (generalstring: PASN1_GENERALSTRING);
       12: (bmpstring: PASN1_BMPSTRING);
@@ -671,7 +660,6 @@ type
     u : ASIdentifierChoice_union;
   end;
   PASIdentifierChoice = ^ASIdentifierChoice;
-
 
   ASIdentifiers = record
     asnum : PASIdentifierChoice;
@@ -1039,7 +1027,6 @@ type
 
 {$ENDREGION}
 
-
 {$REGION 'RSA'}
 
   PRSA = ^RSA;
@@ -1062,7 +1049,7 @@ type
     flags : TC_INT;
     app_data : PAnsiChar;
     rsa_sign : function (_type : TC_INT; const m : PAnsiChar; m_length : TC_UINT; sigret : PAnsiChar; siglen : PC_UINT; const rsa : PRSA) : TC_INT; cdecl;
-    rsa_verify : function(dtype : TC_INT; const m : PAnsiChar; m_length : PC_UINT; sigbuf : PAnsiChar; siglen : PC_UINT; const rsa :PRSA) : TC_INT; cdecl;
+    rsa_verify : function(dtype : TC_INT; const m : PAnsiChar; m_length : PC_UINT; sigbuf : PAnsiChar; siglen : PC_UINT; const rsa: PRSA) : TC_INT; cdecl;
     rsa_keygen : function (rsa : PRSA; bits : TC_INT; e : PBIGNUM; cb : PBN_GENCB) : TC_INT; cdecl;
   end;
 
@@ -1114,7 +1101,6 @@ type
 
   RSA_NET_CALLBACK_FUNC = function (_buf: PAnsiChar; _len: TC_INT; const _prompt: PAnsiChar; _verify: TC_INT): TC_INT; cdecl;
 {$ENDREGION}
-
 
 {$REGION 'DSA'}
   PDSA = ^DSA;
@@ -1228,14 +1214,12 @@ type
 
     end; { record }
 
-
-
   EVP_PKEY_union = record
     case byte of
       0: (ptr : PAnsiChar);
       1: (rsa : PRSA);    // RSA
       2: (dsa : PDSA);    // DSA
-      3: (dh :PDH);       // DH
+      3: (dh: PDH);       // DH
       4: (ec : PEC_KEY);  // ECC
   end;
 
@@ -1285,7 +1269,6 @@ type
         param_print: function(_out: PBIO; const _pkey: PEVP_PKEY; _indent: TC_INT; _pctx: PASN1_PCTX): TC_INT; cdecl;
         sig_print: function(_out: PBIO;const _sigalg: PX509_ALGOR; const _sig: PASN1_STRING;_indent: TC_INT; _pctx: PASN1_PCTX): TC_INT; cdecl;
 
-
         pkey_free: procedure(_pkey: PEVP_PKEY); cdecl;
         pkey_ctrl: function(_pkey: PEVP_PKEY; _op: TC_INT; _arg1: TC_LONG; _arg2: Pointer): TC_INT; cdecl;
 
@@ -1307,7 +1290,7 @@ type
     cleanup : function (_para1 : PEVP_CIPHER_CTX): TC_Int; cdecl;
     ctx_size : TC_Int;
     set_asn1_parameters : function (_para1 : PEVP_CIPHER_CTX; _para2 : PASN1_TYPE) : TC_Int; cdecl;
-    get_asn1_parameters :function (_para1 : PEVP_CIPHER_CTX; _para2 :  PASN1_TYPE) : TC_Int; cdecl;
+    get_asn1_parameters: function (_para1 : PEVP_CIPHER_CTX; _para2 :  PASN1_TYPE) : TC_Int; cdecl;
     ctrl : function (_para1 : PEVP_CIPHER_CTX; _type : TC_Int; arg : TC_Int;  ptr : Pointer): TC_Int; cdecl;
     app_data : Pointer;
   end;
@@ -1333,12 +1316,10 @@ type
     _final : array [0..EVP_MAX_BLOCK_LENGTH-1] of AnsiChar;
   end;
 
-
   EVP_CIPHER_INFO = record
     cipher : PEVP_CIPHER;
     iv : array [0..EVP_MAX_IV_LENGTH -1] of AnsiChar;
   end;
-
 
   EVP_MD_CTX = record
     digest : PEVP_MD;
@@ -1348,7 +1329,6 @@ type
     pctx : PEVP_PKEY_CTX;
     update : function (ctx : PEVP_MD_CTX; const data : Pointer; count : TC_SIZE_T) : TC_INT cdecl;
   end;
-
 
   EVP_MD = record
     _type : TC_Int;
@@ -1380,10 +1360,7 @@ type
   EVP_PBE_KEYGEN = function(ctx: PEVP_CIPHER_CTX; pass: PAnsiChar; passlen: TC_INT; param: PASN1_TYPE; cipher: PEVP_CIPHER; md: PEVP_MD; en_de: TC_INT): TC_INT;
   PEVP_PBE_KEYGEN = ^EVP_PBE_KEYGEN;
 
-
 {$ENDREGION}
-
-
 
 {$REGION 'X509'}
 
@@ -1399,7 +1376,6 @@ type
   PX509_POLICY_CACHE = ^X509_POLICY_CACHE;
   PX509_CRL_METHOD = Pointer;
   PSTACK_OF_X509_REVOKED = PSTACK_OF;
-
 
   PPSTACK_OF_X509 = ^PSTACK_OF_X509;
 
@@ -1504,7 +1480,7 @@ type
 
   x509_attributes_union = record
     case Byte of
-      $FF :(Ptr : PAnsiChar);
+      $FF: (Ptr : PAnsiChar);
       0  : (_set: PSTACK_OF_ASN1_TYPE); // 0
       1  : (_single: PASN1_TYPE);
   end;
@@ -1533,7 +1509,6 @@ type
   end;
   PPX509_REQ = ^PX509_REQ;
 
-
   X509_CINF = record
     version: PASN1_INTEGER;
     serialNumber: PASN1_INTEGER;
@@ -1549,7 +1524,6 @@ type
   end;
   PX509_CINF = ^X509_CINF;
   PPX509_CINF = ^PX509_CINF;
-
 
   X509_CERT_AUX = record
     trust : PSTACK_OF_ASN1_OBJECT;
@@ -1766,7 +1740,6 @@ type
         attributes: PSTACK_OF_X509_ATTRIBUTE;
   end;
 
-
   NETSCAPE_SPKAC = record
     pubkey : PX509_PUBKEY;
     challenge : PASN1_IA5STRING;
@@ -1831,7 +1804,6 @@ type
 {$ENDREGION}
 
 {$REGION 'X509V3}
-
 
   PX509V3_CONF_METHOD = ^X509V3_CONF_METHOD;
   X509V3_CONF_METHOD = record
@@ -2083,8 +2055,6 @@ type
       onlyattr: TC_INT;
   end;
 
-
-
   PX509_PURPOSE = ^X509_PURPOSE;
 
   X509_CHECK_PURPOSE_FUNC = function(p: PX509_PURPOSE; _x509: PX509; _i: TC_INT): TC_INT; cdecl;
@@ -2119,7 +2089,6 @@ type
       map_skip: TC_LONG;
   end;
 
-
   PX509_POLICY_NODE = ^X509_POLICY_NODE;
   X509_POLICY_NODE = record
     data: PX509_POLICY_DATA;
@@ -2144,8 +2113,6 @@ type
       user_policies: PSTACK_OF_X509_POLICY_NODE;
       flags: TC_UINT;
   end;
-
-
 
 {$ENDREGION}
 
@@ -2238,7 +2205,6 @@ type
 
 {$REGION 'AES'}
 
-
   AES_KEY = record
 {$IFDEF AES_LONG}
     rd_key: array[0..(4*(AES_MAXNR + 1))-1] of TC_ULONG;
@@ -2255,7 +2221,6 @@ type
 
 {$REGION 'BLOWFISH'}
 
-
   BF_KEY = record
     P: array [0..BF_ROUNDS+1] of BF_LONG;
     S: array [0..(4*256)-1] of BF_LONG;
@@ -2265,7 +2230,6 @@ type
 {$ENDREGION}
 
 {$REGION 'CMAX'}
-
 
   CMAC_CTX = record
     cctx: EVP_CIPHER_CTX;
@@ -2450,7 +2414,6 @@ type
     keyAttr: ASN1_TYPE;
   end;
 
-
   PCMS_RecipientKeyIdentifier = ^CMS_RecipientKeyIdentifier;
   CMS_RecipientKeyIdentifier = record
     subjectKeyIdentifier: PASN1_OCTET_STRING;
@@ -2470,13 +2433,11 @@ type
      d: CMS_KeyAgreeRecipientIdentifier_union;
   end;
 
-
   PCMS_RecipientEncryptedKey = ^CMS_RecipientEncryptedKey;
   CMS_RecipientEncryptedKey = record
     rid: PCMS_KeyAgreeRecipientIdentifier;
     encryptedKey: PASN1_OCTET_STRING;
   end;
-
 
   CMS_OriginatorIdentifierOrKey_union = record
    case Byte of
@@ -2612,7 +2573,6 @@ type
 
 {$REGION 'DES'}
 
-
   DES_cblock = array[0..7] of TC_UCHAR;
   PDES_cblock = ^DES_cblock;
   const_DES_cblock = array[0..7] of TC_UCHAR;
@@ -2632,7 +2592,6 @@ type
 
 {$ENDREGION}
 
-
 {$REGION 'ENGINE'}
 {$ENDREGION}
 
@@ -2648,9 +2607,7 @@ type
         status: function: TC_INT; cdecl;
     end;
 
-
 {$ENDREGION}
-
 
   PECDH_METHOD = ^ECDH_METHOD;
   PECDSA_METHOD = ^ECDSA_METHOD;
@@ -2698,9 +2655,7 @@ type
         ex_data: CRYPTO_EX_DATA;
     end;
 
-
 {$ENDREGION}  
-
 
   SK_POP_FREE_PROC = procedure(_par1: Pointer); cdecl;
 
@@ -2792,7 +2747,6 @@ type
         unauth_attr: PSTACK_OF_X509_ATTRIBUTE;
         pkey: PEVP_PKEY;
     end; { record }
-
 
     PPKCS7_RECIP_INFO = ^PKCS7_RECIP_INFO;
     PPPKCS7_RECIP_INFO = ^PPKCS7_RECIP_INFO;
@@ -2894,7 +2848,6 @@ type
     end; { record }
     
 {$ENDREGION}
-
 
 {$REGION 'IDEA'}
 
@@ -3036,7 +2989,7 @@ type
     PPOCSP_CERTSTATUS = ^POCSP_CERTSTATUS;
     OCSP_CERTSTATUS = record
         _type: TC_INT;
-        _value :OCSP_CERTSTATUS_union;
+        _value: OCSP_CERTSTATUS_union;
     end;
     
     POCSP_SINGLERESP = ^OCSP_SINGLERESP;
@@ -3094,7 +3047,6 @@ type
       _mem: PBIO;       
       _asn1_len: TC_ULONG;
     end;
-
 
 {$ENDREGION}
 
@@ -3261,7 +3213,6 @@ type
     ssl_callback_ctrl: function(_s: PSSL; _cb_id: TC_INT; fp: SSL_METHOD_CALLBACK_FN): TC_LONG; cdecl;
     ssl_ctx_callback_ctrl: function(_s: PSSL_CTX; _cb_id: TC_INT; fp: SSL_METHOD_CALLBACK_FN): TC_LONG; cdecl;
   end; { record }
-
 
   SSL_SESSION = record
     _ssl_version: TC_INT;  
@@ -3555,7 +3506,6 @@ type
     _ext_proto_negotiated_len: PAnsiChar;
 {$endif}
 
-
     _srtp_profiles: PSTACK_OF_SRTP_PROTECTION_PROFILE;
     _srtp_profile: PSRTP_PROTECTION_PROFILE;
 
@@ -3569,8 +3519,6 @@ type
     _srp_ctx: SRP_CTX; 
 {$endif}
   end; { record }
-
-
 
 {$ENDREGION}
 implementation

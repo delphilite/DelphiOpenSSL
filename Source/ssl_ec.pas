@@ -2,6 +2,7 @@
 unit ssl_ec;
 
 interface
+
 uses ssl_types;
 
 var
@@ -145,7 +146,6 @@ var
 
   ERR_load_EC_strings: procedure; cdecl = nil;
 
-
 procedure EVP_PKEY_assign_EC_KEY(key: PEVP_PKEY; eckey: PEC_KEY); inline;
 
 procedure SSL_InitEC;
@@ -153,7 +153,6 @@ procedure SSL_InitEC;
 implementation
 
 uses ssl_util, ssl_lib, ssl_evp, ssl_const;
-
 
 procedure LoadCurves;
 var BufSize: Integer;

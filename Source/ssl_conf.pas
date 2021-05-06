@@ -4,6 +4,7 @@ unit ssl_conf;
 {$endif}
 
 interface
+
 uses ssl_types;
 const
     CONF_MFLAGS_IGNORE_ERRORS	     = $1;
@@ -52,7 +53,6 @@ const
     CONF_R_UNABLE_TO_CREATE_NEW_SECTION		     = 103;
     CONF_R_UNKNOWN_MODULE_NAME			         = 113;
     CONF_R_VARIABLE_HAS_NO_VALUE			     = 104;
-
 
 var
     CONF_set_default_method: function(meth: PCONF_METHOD): TC_INT; cdecl;

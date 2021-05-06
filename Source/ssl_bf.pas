@@ -1,6 +1,7 @@
 unit ssl_bf;
 
 interface
+
 uses ssl_types;
 
 var
@@ -18,6 +19,7 @@ var
 procedure SSL_InitBF;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitBF;

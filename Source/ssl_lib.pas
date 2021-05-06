@@ -11,7 +11,6 @@ var
   SSL_C_LIB : AnsiString = 'libeay32.dll';
 {$IFEND}
 
-
 function SSLCryptHandle: THandle;
 function LoadSSLCrypt: Boolean;
 function LoadFunctionCLib(const FceName: String; const ACritical : Boolean = True): Pointer;
@@ -29,7 +28,6 @@ uses
     {$ENDIF MSWINDOWS}
   {$ENDIF UNIX}
   sysutils;
-
 
 var hCrypt: THandle = 0;
 
@@ -49,7 +47,6 @@ begin
 {$ENDIF MSWINDOWS}{$ENDIF UNIX}
   Result := hCrypt <> 0;
 end;
-
 
 function LoadFunctionCLib(const FceName: String; const ACritical : Boolean = True): Pointer;
 begin
@@ -71,7 +68,6 @@ begin
     end;
   end;
 end;
-
 
 initialization
 

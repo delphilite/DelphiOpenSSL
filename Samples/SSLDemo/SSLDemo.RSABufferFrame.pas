@@ -68,8 +68,8 @@ uses
 
 procedure TRSABufferFrame.btnLoadCertClick(Sender: TObject);
 var
-  Buffer :TStream;
-  Cerificate :TX509Cerificate;
+  Buffer: TStream;
+  Cerificate: TX509Cerificate;
 begin
   Buffer := TStringStream.Create(memCert.Text);
   try
@@ -102,8 +102,8 @@ end;
 
 procedure TRSABufferFrame.btnLoadPublicKeyClick(Sender: TObject);
 var
-  Buffer :TStream;
-  PublicKey :TRSAPublicKey;
+  Buffer: TStream;
+  PublicKey: TRSAPublicKey;
 begin
   Buffer := TStringStream.Create(memPub.Text);
   try
@@ -121,8 +121,8 @@ end;
 
 procedure TRSABufferFrame.btnLoadPrivateKeyClick(Sender: TObject);
 var
-  Buffer :TStream;
-  PrivateKey :TRSAPrivateKey;
+  Buffer: TStream;
+  PrivateKey: TRSAPrivateKey;
 begin
   Buffer := TStringStream.Create(memPriv.Text);
   try
@@ -141,7 +141,7 @@ end;
 
 constructor TRSABufferFrame.Create(AOwner: TComponent);
 var
-  TestFolder :string;
+  TestFolder: string;
 begin
   inherited;
   TestFolder := StringReplace(ExtractFilePath(ParamStr(0)), 'Samples\SSLDemo', 'TestData', [rfReplaceAll, rfIgnoreCase]);

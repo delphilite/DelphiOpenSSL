@@ -1,6 +1,7 @@
 unit ssl_ocsp;
 
 interface
+
 uses ssl_types;
 
 var
@@ -191,10 +192,10 @@ var
 
     ERR_load_OCSP_strings: procedure; cdecl = nil;
 
-
 procedure SSL_InitOCSP;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitOCSP;

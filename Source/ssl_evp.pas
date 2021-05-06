@@ -95,7 +95,7 @@ var
   EVP_DigestVerifyInit: function(ctx: PEVP_MD_CTX; pctx: PPEVP_PKEY_CTX; const _type: PEVP_MD; e: PENGINE; pkey: PEVP_PKEY): TC_INT; cdecl = nil;
   EVP_DigestVerifyFinal: function(ctx: PEVP_MD_CTX; sig: PAnsiChar; siglen: TC_SIZE_T): TC_INT; cdecl = nil;
 
-  EVP_OpenInit: function(ctx: PEVP_CIPHER_CTX;const _type: PEVP_CIPHER; ek: PAnsiChar; ekl:  TC_INT; const iv: PAnsiChar;  priv: PEVP_PKEY): TC_INT; cdecl = nil;
+  EVP_OpenInit: function(ctx: PEVP_CIPHER_CTX;const _type: PEVP_CIPHER; ek: PAnsiChar; ekl : TC_INT; const iv: PAnsiChar;  priv: PEVP_PKEY): TC_INT; cdecl = nil;
   EVP_OpenFinal: function(ctx: PEVP_CIPHER_CTX; _out: PAnsiChar; var outl: TC_INT): TC_INT; cdecl = nil;
 
   EVP_SealInit: function(ctx: PEVP_CIPHER_CTX; const _type: PEVP_CIPHER; ek: PPAnsiChar; var ekl: TC_INT; iv: PAnsiChar; pubk: PPEVP_PKEY; npubk: TC_INT): TC_INT; cdecl = nil;
@@ -348,11 +348,10 @@ var
   EVP_PKEY_asn1_set_public: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pub_decode: EVP_pub_decode_t;   pub_encode: EVP_pub_encode_t;   pub_cmp: EVP_pub_cmp_t; pub_print: EVP_pub_print_t; pkey_size: EVP_pkey_size_t; pkey_bits: EVP_pkey_bits_t); cdecl = nil;
   EVP_PKEY_asn1_set_private: procedure(ameth: PEVP_PKEY_ASN1_METHOD; priv_decode: EVP_priv_decode_t; priv_encode: EVP_priv_encode_t;    priv_print: EVP_priv_print_t); cdecl = nil;
 
-  EVP_PKEY_asn1_set_param: procedure(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: EVP_param_decode_t; param_encode: EVP_param_encode_t; param_missing: EVP_param_missing_t; param_copy: EVP_param_copy_t; param_cmp:  EVP_param_cmp_t; param_print: EVP_param_print_t); cdecl = nil;
+  EVP_PKEY_asn1_set_param: procedure(ameth: PEVP_PKEY_ASN1_METHOD; param_decode: EVP_param_decode_t; param_encode: EVP_param_encode_t; param_missing: EVP_param_missing_t; param_copy: EVP_param_copy_t; param_cmp : EVP_param_cmp_t; param_print: EVP_param_print_t); cdecl = nil;
 
   EVP_PKEY_asn1_set_free: procedure(ameth: PEVP_PKEY_ASN1_METHOD;   pkey_free: EVP_pkey_free_t); cdecl = nil;
   EVP_PKEY_asn1_set_ctrl: procedure(ameth: PEVP_PKEY_ASN1_METHOD; pkey_ctrl: EVP_pkey_ctrl_t); cdecl = nil;
-
 
   EVP_PKEY_meth_find: function(_type: TC_INT): PEVP_PKEY_METHOD; cdecl = nil;
   EVP_PKEY_meth_new: function(id: TC_INT; flags: TC_INT): PEVP_PKEY_METHOD; cdecl = nil;
@@ -375,7 +374,6 @@ var
   EVP_PKEY_CTX_ctrl_str: function(ctx: PEVP_PKEY_CTX; _type: PAnsiChar; value: PAnsiChar): TC_INT; cdecl = nil;
   EVP_PKEY_CTX_get_operation: function(ctx: PEVP_PKEY_CTX): TC_INT; cdecl = nil;
 
-
   EVP_PKEY_new_mac_key: function(_type: TC_INT; e: PENGINE; const key: PAnsiChar; keylen: TC_INT): PEVP_PKEY; cdecl = nil;
   EVP_PKEY_CTX_get_data: function(ctx: PEVP_PKEY_CTX): Pointer; cdecl = nil;
   EVP_PKEY_CTX_get0_pkey: function(ctx: PEVP_PKEY_CTX): PEVP_PKEY; cdecl = nil;
@@ -397,7 +395,6 @@ var
   EVP_PKEY_derive_set_peer: function(ctx: PEVP_PKEY_CTX; peer: PEVP_PKEY): TC_INT; cdecl = nil;
   EVP_PKEY_derive: function(ctx: PEVP_PKEY_CTX; key: PAnsiChar; keylen: TC_SIZE_T): TC_INT; cdecl = nil;
 
-
   EVP_PKEY_paramgen_init: function(ctx: PEVP_PKEY_CTX): TC_INT; cdecl = nil;
   EVP_PKEY_paramgen: function(ctx: PEVP_PKEY_CTX; ppkey: PPEVP_PKEY): TC_INT; cdecl = nil;
   EVP_PKEY_keygen_init: function(ctx: PEVP_PKEY_CTX): TC_INT; cdecl = nil;
@@ -408,7 +405,6 @@ var
 
   EVP_PKEY_CTX_get_keygen_info: function(ctx: PEVP_PKEY_CTX; idx:TC_INT): TC_INT; cdecl = nil;
   ERR_load_EVP_strings: procedure; cdecl = nil;
-
 
 function EVP_get_digestbynid(a: TC_INT): PEVP_MD; inline;
 function EVP_get_digestbyobj(a: PASN1_OBJECT): PEVP_MD; inline;
@@ -586,7 +582,6 @@ function EVP_DigestVerifyUpdate(ctx: PEVP_MD_CTX;const d: Pointer; cnt: TC_SIZE_
 begin
   Result := EVP_DigestUpdate(ctx, d, cnt);
 end;
-
 
 procedure SSL_InitEVP;
 begin

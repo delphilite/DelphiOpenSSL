@@ -37,7 +37,7 @@ uses
 
 procedure TEncFrame.btnEncryptClick(Sender: TObject);
 var
-  EncUtil :TEncUtil;
+  EncUtil: TEncUtil;
 begin
   EncUtil := TEncUtil.Create;
   try
@@ -57,7 +57,7 @@ end;
 
 constructor TEncFrame.Create(AOwner: TComponent);
 var
-  TestFolder :string;
+  TestFolder: string;
 begin
   inherited;
   TestFolder := StringReplace(ExtractFilePath(ParamStr(0)), 'Samples\SSLDemo', 'TestData', [rfReplaceAll, rfIgnoreCase]);
@@ -69,7 +69,7 @@ end;
 
 procedure TEncFrame.btnDecryptClick(Sender: TObject);
 var
-  EncUtil :TEncUtil;
+  EncUtil: TEncUtil;
 begin
   EncUtil := TEncUtil.Create;
   try

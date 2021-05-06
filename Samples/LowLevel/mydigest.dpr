@@ -111,7 +111,6 @@ begin
 
         end;
 
-
        F.Position := 0;
        if SHA_Init(@_sha) = 1 then
         begin
@@ -133,7 +132,6 @@ begin
          Writeln;
 
         end;
-
 
        F.Position := 0;
        if SHA256_Init(@_sha256) = 1 then

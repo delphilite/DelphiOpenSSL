@@ -30,84 +30,84 @@ uses
 type
   TX509Cerificate = class;
 
-  TPassphraseEvent = procedure (Sender :TObject; var Passphrase :string) of object;
+  TPassphraseEvent = procedure (Sender: TObject; var Passphrase: string) of object;
 
   TRSAKey = class(TOpenSLLBase)
   public
-    function IsValid :Boolean; virtual; abstract;
-    procedure LoadFromFile(const FileName :string); virtual; abstract;
-    procedure LoadFromStream(AStream :TStream); virtual; abstract;
+    function IsValid: Boolean; virtual; abstract;
+    procedure LoadFromFile(const FileName: string); virtual; abstract;
+    procedure LoadFromStream(AStream: TStream); virtual; abstract;
   end;
 
   // RSA public key
   TRSAPublicKey = class(TRSAKey)
   private
     FBuffer: TBytes;
-    FRSA :PRSA;
-    FCerificate :TX509Cerificate;
+    FRSA: PRSA;
+    FCerificate: TX509Cerificate;
     procedure FreeRSA;
-    function GetRSA :PRSA;
+    function GetRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
     function Print: string;
-    function IsValid :Boolean; override;
-    procedure LoadFromFile(const FileName :string); override;
-    procedure LoadFromStream(AStream :TStream); override;
-    procedure LoadFromCertificate(Cerificate :TX509Cerificate);
+    function IsValid: Boolean; override;
+    procedure LoadFromFile(const FileName: string); override;
+    procedure LoadFromStream(AStream: TStream); override;
+    procedure LoadFromCertificate(Cerificate: TX509Cerificate);
   end;
 
   // RSA private key
   TRSAPrivateKey = class(TRSAKey)
   private
     FBuffer: TBytes;
-    FRSA :PRSA;
+    FRSA: PRSA;
     FOnNeedPassphrase: TPassphraseEvent;
     procedure FreeRSA;
-    function GetRSA :PRSA;
+    function GetRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
-    function IsValid :Boolean; override;
+    function IsValid: Boolean; override;
     function Print: string;
-    procedure LoadFromFile(const FileName :string); override;
-    procedure LoadFromStream(AStream :TStream); override;
-    property OnNeedPassphrase :TPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
+    procedure LoadFromFile(const FileName: string); override;
+    procedure LoadFromStream(AStream: TStream); override;
+    property OnNeedPassphrase: TPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
   end;
 
   // certificate containing an RSA public key
   TX509Cerificate = class(TOpenSLLBase)
   private
     FBuffer: TBytes;
-    FPublicRSA :PRSA;
-    FX509 :pX509;
+    FPublicRSA: PRSA;
+    FX509: pX509;
     procedure FreeRSA;
     procedure FreeX509;
-    function GetPublicRSA :PRSA;
+    function GetPublicRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function IsValid :Boolean;
+    function IsValid: Boolean;
     function Print: string;
-    procedure LoadFromFile(const FileName :string);
-    procedure LoadFromStream(AStream :TStream);
+    procedure LoadFromFile(const FileName: string);
+    procedure LoadFromStream(AStream: TStream);
   end;
 
   TRSAUtil = class(TOpenSLLBase)
   private
-    FPublicKey :TRSAPublicKey;
+    FPublicKey: TRSAPublicKey;
     FPrivateKey: TRSAPrivateKey;
   public
     constructor Create; override;
     destructor Destroy; override;
-    procedure PublicEncrypt(InputStream :TStream; OutputStream :TStream; Padding :TRASPadding = rpPKCS); overload;
-    procedure PublicEncrypt(const InputFileName, OutputFileName :TFileName; Padding :TRASPadding = rpPKCS); overload;
-    procedure PrivateDecrypt(InputStream :TStream; OutputStream :TStream; Padding :TRASPadding = rpPKCS); overload;
-    procedure PrivateDecrypt(const InputFileName, OutputFileName :TFileName; Padding :TRASPadding = rpPKCS); overload;
+    procedure PublicEncrypt(InputStream: TStream; OutputStream: TStream; Padding: TRASPadding = rpPKCS); overload;
+    procedure PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRASPadding = rpPKCS); overload;
+    procedure PrivateDecrypt(InputStream: TStream; OutputStream: TStream; Padding: TRASPadding = rpPKCS); overload;
+    procedure PrivateDecrypt(const InputFileName, OutputFileName: TFileName; Padding: TRASPadding = rpPKCS); overload;
 
-    property PublicKey :TRSAPublicKey read FPublicKey;
-    property PrivateKey :TRSAPrivateKey read FPrivateKey;
+    property PublicKey: TRSAPublicKey read FPublicKey;
+    property PrivateKey: TRSAPrivateKey read FPrivateKey;
   end;
 
 implementation
@@ -142,9 +142,9 @@ function ReadKeyCallback(buf: PAnsiChar; buffsize: integer; rwflag: integer; u: 
     Dest[Len] := #0;
   end;
 var
-  Len :Integer;
-  Password :string;
-  PrivateKey :TRSAPrivateKey;
+  Len: Integer;
+  Password: string;
+  PrivateKey: TRSAPrivateKey;
 begin
   Result := 0;
   if Assigned(u) then
@@ -163,12 +163,11 @@ begin
   end;
 end;
 
-
 procedure TRSAUtil.PublicEncrypt(InputStream, OutputStream: TStream; Padding: TRASPadding);
 var
-  InputBuffer :TBytes;
-  OutputBuffer :TBytes;
-  RSAOutLen :Integer;
+  InputBuffer: TBytes;
+  OutputBuffer: TBytes;
+  RSAOutLen: Integer;
 begin
   if not PublicKey.IsValid then
     raise Exception.Create('Public key not assigned');
@@ -204,9 +203,9 @@ end;
 procedure TRSAUtil.PrivateDecrypt(InputStream, OutputStream: TStream;
   Padding: TRASPadding);
 var
-  InputBuffer :TBytes;
-  OutputBuffer :TBytes;
-  RSAOutLen :Integer;
+  InputBuffer: TBytes;
+  OutputBuffer: TBytes;
+  RSAOutLen: Integer;
 begin
   if not PrivateKey.IsValid then
     raise Exception.Create('Private key not assigned');
@@ -228,7 +227,7 @@ end;
 procedure TRSAUtil.PrivateDecrypt(const InputFileName,
   OutputFileName: TFileName; Padding: TRASPadding);
 var
-  InputFile, OutputFile :TStream;
+  InputFile, OutputFile: TStream;
 begin
   InputFile := TFileStream.Create(InputFileName, fmOpenRead);
   try
@@ -246,7 +245,7 @@ end;
 procedure TRSAUtil.PublicEncrypt(const InputFileName, OutputFileName: TFileName;
   Padding: TRASPadding);
 var
-  InputFile, OutputFile :TStream;
+  InputFile, OutputFile: TStream;
 begin
   InputFile := TFileStream.Create(InputFileName, fmOpenRead);
   try
@@ -343,7 +342,7 @@ end;
 
 procedure TX509Cerificate.LoadFromStream(AStream: TStream);
 var
-  KeyFile :pBIO;
+  KeyFile: pBIO;
 begin
   FreeRSA;
   FreeX509;
@@ -426,7 +425,7 @@ end;
 
 procedure TRSAPrivateKey.LoadFromStream(AStream: TStream);
 var
-  KeyBuffer :pBIO;
+  KeyBuffer: pBIO;
   cb : pem_password_cb;
 begin
   cb := nil;
@@ -434,7 +433,6 @@ begin
   SetLength(FBuffer, AStream.Size);
   AStream.ReadBuffer(FBuffer[0], AStream.Size);
   KeyBuffer := BIO_new_mem_buf(FBuffer, Length(FBuffer));
-
 
   if KeyBuffer = nil then
     RaiseOpenSSLError('RSA load stream error');
@@ -504,8 +502,8 @@ end;
 
 procedure TRSAPublicKey.LoadFromStream(AStream: TStream);
 var
-  KeyBuffer :pBIO;
-  pKey :PEVP_PKEY;
+  KeyBuffer: pBIO;
+  pKey: PEVP_PKEY;
 begin
   SetLength(FBuffer, AStream.Size);
   AStream.ReadBuffer(FBuffer[0], AStream.Size);

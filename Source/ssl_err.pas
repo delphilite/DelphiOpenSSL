@@ -2,6 +2,7 @@
 unit ssl_err;
 
 interface
+
 uses sysutils, ssl_types;
 var
 
@@ -66,6 +67,7 @@ procedure SSL_InitERR;
 function SSL_CheckError(AShowException: Boolean = True): TC_ULONG;
 
 implementation
+
 uses ssl_lib;
 
 function SSL_CheckError(AShowException: Boolean = True): TC_ULONG;
@@ -75,7 +77,6 @@ begin
   if (Result <> 0)  and (AShowException) then
     raise ESSLError.Create(Result);
 end;
-
 
 procedure SSL_InitERR;
 begin
@@ -114,7 +115,6 @@ begin
        ERR_load_crypto_strings;
     end;
 end;
-
 
 { ESSLError }
 

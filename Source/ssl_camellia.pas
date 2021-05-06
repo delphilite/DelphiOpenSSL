@@ -1,5 +1,6 @@
 unit ssl_camellia;
 interface
+
 uses ssl_types;
 var
 	Camellia_set_key: function (userKey: PAnsiChar; const bits: TC_INT; key: PCAMELLIA_KEY): TC_INT; cdecl = nil;
@@ -18,6 +19,7 @@ var
 procedure SSL_InitCAMELLIA;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitCAMELLIA;

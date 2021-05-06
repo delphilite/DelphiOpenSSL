@@ -40,8 +40,8 @@ type
   private
     FErrorCode: Integer;
   public
-    constructor Create(Code :Integer; const Msg: string);
-    property ErrorCode :Integer read FErrorCode;
+    constructor Create(Code: Integer; const Msg: string);
+    property ErrorCode: Integer read FErrorCode;
   end;
 
   TOpenSLLBase = class
@@ -57,7 +57,7 @@ const
 
 function GetOpenSSLErrorMessage: string;
 
-procedure RaiseOpenSSLError(const AMessage :string = '');
+procedure RaiseOpenSSLError(const AMessage: string = '');
 
 function EVP_GetSalt: TBytes;
 
@@ -66,19 +66,19 @@ procedure EVP_GetKeyIV(APassword: TBytes; ACipher: PEVP_CIPHER; const ASalt: TBy
 // Password will be encoded in UTF-8 if you want another encodig use the TBytes version
 procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
-function Base64Encode(InputBuffer :TBytes) :TBytes;
-function Base64Decode(InputBuffer :TBytes) :TBytes;
+function Base64Encode(InputBuffer: TBytes): TBytes;
+function Base64Decode(InputBuffer: TBytes): TBytes;
 
 implementation
 
 uses
   ssl_bio, ssl_const, ssl_err, ssl_evp, ssl_rand, OpenSSL.LibEay32;
 
-function Base64Encode(InputBuffer :TBytes) :TBytes;
+function Base64Encode(InputBuffer: TBytes): TBytes;
 var
-  bio, b64 :PBIO;
-  bdata :Pointer;
-  datalen :Integer;
+  bio, b64: PBIO;
+  bdata: Pointer;
+  datalen: Integer;
 begin
   b64 := BIO_new(BIO_f_base64());
   bio := BIO_new(BIO_s_mem());
@@ -95,10 +95,10 @@ begin
   BIO_free_all(b64);
 end;
 
-function Base64Decode(InputBuffer :TBytes) :TBytes;
+function Base64Decode(InputBuffer: TBytes): TBytes;
 var
-  bio, b64 :PBIO;
-  datalen :Integer;
+  bio, b64: PBIO;
+  datalen: Integer;
 begin
   b64 := BIO_new(BIO_f_base64());
   bio := BIO_new_mem_buf(InputBuffer, Length(InputBuffer));
@@ -144,7 +144,7 @@ begin
   Result := string(AnsiString(ErrMsg));
 end;
 
-procedure RaiseOpenSSLError(const AMessage :string);
+procedure RaiseOpenSSLError(const AMessage: string);
 var
   ErrCode: Integer;
   ErrMsg, FullMsg: string;

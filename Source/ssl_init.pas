@@ -12,7 +12,6 @@ uses
   ssl_dh, ssl_err, ssl_objects, ssl_sk, ssl_pkcs12, ssl_pkcs7, ssl_cms, ssl_ecdh, ssl_ecdsa, ssl_hmac, ssl_idea,
   ssl_lhash, ssl_md4, ssl_md5, ssl_ocsp, ssl_mdc2, ssl_rc2, ssl_rc4, ssl_rc5, ssl_ripemd, ssl_sha;
 
-
 procedure SSL_InitLib;
 begin
   ssl_util.SSL_InitUtil;
@@ -57,6 +56,5 @@ begin
   ssl_ripemd.SSL_Initripemd;
   ssl_sha.ssl_Initsha;
 end;
-
 
 end.

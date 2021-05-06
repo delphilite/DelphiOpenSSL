@@ -1,6 +1,7 @@
 unit ssl_sha;
 
 interface
+
 uses ssl_types;
 
 var
@@ -33,10 +34,10 @@ var
 	SHA512: function(const d: PAnsiChar; n: TC_SIZE_T;md: PAnsiChar): PAnsiChar; cdecl = nil;
 	SHA512_Transform: procedure(c: PSHA512_CTX; const data: PAnsiChar); cdecl = nil;
 
-
 procedure SSL_Initsha;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_Initsha;

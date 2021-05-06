@@ -1,6 +1,7 @@
 unit ssl_rsa;
 
 interface
+
 uses ssl_types;
 
 type
@@ -22,7 +23,6 @@ var
   RSA_flags: function(rsa: PRSA): TC_INT; cdecl = nil;
   ERR_load_RSA_strings: procedure; cdecl = nil;
 
-
 	RSA_set_default_method: procedure(const _meth: PRSA_METHOD); cdecl = nil;
 	RSA_get_default_method: function: PRSA_METHOD; cdecl = nil;
 	RSA_get_method: function(const _rsa: PRSA): PRSA_METHOD; cdecl = nil;
@@ -38,7 +38,6 @@ var
 	d2i_RSAPrivateKey: function(a: PPRSA; _in: PPAnsiChar; len: TC_LONG): PRSA; cdecl = nil;
 	i2d_RSAPrivateKey: function(a: PRSA; _out: PPAnsiChar): TC_INT; cdecl = nil;
 	RSAPrivateKey_it: function: PASN1_ITEM; cdecl = nil;
-
 
 	RSA_PSS_PARAMS_new: function: PRSA_PSS_PARAMS; cdecl = nil;
 	RSA_PSS_PARAMS_free: procedure(a: PRSA_PSS_PARAMS); cdecl = nil;
@@ -92,7 +91,6 @@ var
 
 	RSAPublicKey_dup: function(_rsa: PRSA): PRSA; cdecl = nil;
 	RSAPrivateKey_dup: function(_rsa: PRSA): PRSA; cdecl = nil;
-
 
 procedure EVP_PKEY_assign_RSA(key: PEVP_PKEY; rsa: PRSA); inline;
 
@@ -159,7 +157,6 @@ procedure EVP_PKEY_CTX_get_rsa_mgf1_md(ctx: PEVP_PKEY_CTX; pmd: PPEVP_MD); inlin
 begin
 	EVP_PKEY_CTX_ctrl(ctx, EVP_PKEY_RSA, EVP_PKEY_OP_TYPE_SIG, EVP_PKEY_CTRL_GET_RSA_MGF1_MD, 0, @pmd);
 end;
-
 
 procedure SSL_InitRSA;
 begin

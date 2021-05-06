@@ -1,6 +1,7 @@
 unit ssl_cast;
 
 interface
+
 uses ssl_types;
 var
  private_CAST_set_key: procedure(key: PCAST_KEY; len: TC_INT; data: PAnsiChar); cdecl = nil;
@@ -15,6 +16,7 @@ var
 procedure SLL_InitCAST;
 
 implementation
+
 uses ssl_lib;
 
 procedure SLL_InitCAST;

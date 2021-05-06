@@ -1,6 +1,7 @@
 unit ssl_ecdsa;
 
 interface
+
 uses ssl_types;
 
 var
@@ -43,6 +44,7 @@ var
 procedure SSL_InitECDSA;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitECDSA;

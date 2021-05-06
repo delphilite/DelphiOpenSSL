@@ -1,5 +1,6 @@
 unit ssl_rand;
 interface
+
 uses ssl_types;
 var 
     RAND_set_rand_method: function(const meth: PRAND_METHOD): TC_INT; cdecl = nil;
@@ -30,6 +31,7 @@ var
 procedure SSL_InitRAND; 
     
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitRAND;

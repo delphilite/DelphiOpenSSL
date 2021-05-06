@@ -1,6 +1,7 @@
 unit ssl_hmac;
 
 interface
+
 uses ssl_types;
 
 var
@@ -18,6 +19,7 @@ var
 
 procedure SSL_InitHMAC;
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitHMAC;

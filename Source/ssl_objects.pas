@@ -2,6 +2,7 @@
 unit ssl_objects;
 
 interface
+
 uses ssl_types;
 var
     OBJ_NAME_init: function: TC_INT; cdecl = nil;
@@ -46,6 +47,7 @@ var
 procedure SSL_InitOBJ;   
    
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitOBJ;

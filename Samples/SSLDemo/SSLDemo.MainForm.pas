@@ -57,8 +57,8 @@ uses
 procedure TMainForm.FormCreate(Sender: TObject);
 var
   MainFrame: TMainFrame;
-  RSABufferFrame :TRSABufferFrame;
-  EncFrame :TEncFrame;
+  RSABufferFrame: TRSABufferFrame;
+  EncFrame: TEncFrame;
   UnpackFrame: TUnpackPKCS7Frame;
 begin
   pgcMain.ActivePageIndex := 0;

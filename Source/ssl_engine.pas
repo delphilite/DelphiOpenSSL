@@ -2,6 +2,7 @@
 unit ssl_engine;
 
 interface
+
 uses ssl_types;
 
 var
@@ -86,7 +87,6 @@ var
   ENGINE_cmd_is_executable: function(e: PENGINE; cmd: TC_INT): TC_INT; cdecl = nil;
   ENGINE_ctrl_cmd: function(e: PENGINE; const cmd_name: PAnsiChar; i: TC_LONG; p: Pointer; f:ENGINE_CB_FUNC; cmd_optional: TC_INT): TC_INT; cdecl = nil;
   ENGINE_ctrl_cmd_string: function(e: PENGINE; const cmd_name: PAnsiChar; const arg: PAnsiChar;	cmd_optional: TC_INT): TC_INT; cdecl = nil;
-
 
   ENGINE_new: function: PENGINE;
   ENGINE_free: function(e: PENGINE): TC_INT; cdecl = nil;
@@ -179,6 +179,7 @@ var
 procedure SSL_InitENGINE;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitENGINE;
@@ -340,7 +341,6 @@ begin
 	   @ENGINE_set_default:= LoadFunctionCLib('ENGINE_set_default');
 	   @ENGINE_get_static_state:= LoadFunctionCLib('ENGINE_get_static_state');
 	   @ERR_load_ENGINE_strings:= LoadFunctionCLib('ERR_load_ENGINE_strings');
-
 
   end;
 

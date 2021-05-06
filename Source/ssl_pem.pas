@@ -2,6 +2,7 @@
 unit ssl_pem;
 
 interface
+
 uses ssl_types;
 
 var
@@ -29,7 +30,6 @@ var
 
   PEM_read_bio_Parameters: function(bp: PBIO;  x: PPEVP_PKEY): PEVP_PKEY; cdecl = nil;
   PEM_write_bio_Parameters: function(bp: PBIO; x: PEVP_PKEY): TC_INT; cdecl = nil;
-
 
 {$REGION 'RSA'}
   PEM_read_bio_RSAPrivateKey: function(bp: PBIO; x: PPRSA; cb: pem_password_cb; u: pointer): PRSA; cdecl = nil;
@@ -122,10 +122,10 @@ var
  i2d_PKCS8PrivateKey_bio: function(bp: PBIO; x: PEVP_PKEY; enc: PEVP_CIPHER; kstr: PAnsiChar;
             klen: TC_INT; cb: pem_password_cb; u: pointer): TC_INT; cdecl = nil;
 
-
 procedure SSL_InitPEM;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitPEM;
@@ -216,7 +216,6 @@ begin
    @PEM_write_bio_NETSCAPE_CERT_SEQUENCE:= LoadFunctionCLib('PEM_write_bio_NETSCAPE_CERT_SEQUENCE');
    @PEM_write_NETSCAPE_CERT_SEQUENCE:= LoadFunctionCLib('PEM_write_NETSCAPE_CERT_SEQUENCE');
 {$ENDREGION}
-
 
    @PEM_write_ECPrivateKey := LoadFunctionCLib('PEM_write_ECPrivateKey');
    @PEM_write_bio_ECPrivateKey := LoadFunctionCLib('PEM_write_bio_ECPrivateKey');

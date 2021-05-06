@@ -56,7 +56,7 @@ type
     procedure btnCryptWithCertClick(Sender: TObject);
     procedure btnGenerateSampleFileClick(Sender: TObject);
   private
-    procedure PassphraseReader(Sender :TObject; var Passphrase :string);
+    procedure PassphraseReader(Sender: TObject; var Passphrase: string);
   public
     constructor Create(AOwner: TComponent); override;
   end;
@@ -72,7 +72,7 @@ uses
 
 procedure TMainFrame.btnCryptWithKeyClick(Sender: TObject);
 var
-  RSAUtil :TRSAUtil;
+  RSAUtil: TRSAUtil;
 begin
   RSAUtil := TRSAUtil.Create;
   try
@@ -85,7 +85,7 @@ end;
 
 procedure TMainFrame.btnDecryptWithKeyClick(Sender: TObject);
 var
-  RSAUtil :TRSAUtil;
+  RSAUtil: TRSAUtil;
 begin
   RSAUtil := TRSAUtil.Create;
   try
@@ -99,8 +99,8 @@ end;
 
 procedure TMainFrame.btnCryptWithCertClick(Sender: TObject);
 var
-  RSAUtil :TRSAUtil;
-  Cerificate :TX509Cerificate;
+  RSAUtil: TRSAUtil;
+  Cerificate: TX509Cerificate;
 begin
   RSAUtil := TRSAUtil.Create;
   try
@@ -119,7 +119,7 @@ end;
 
 procedure TMainFrame.btnGenerateSampleFileClick(Sender: TObject);
 var
-  SL :TStringList;
+  SL: TStringList;
 begin
   SL := TStringList.Create;
   try
@@ -132,7 +132,7 @@ end;
 
 constructor TMainFrame.Create(AOwner: TComponent);
 var
-  TestFolder :string;
+  TestFolder: string;
 begin
   inherited;
   TestFolder := StringReplace(ExtractFilePath(ParamStr(0)), 'Samples\SSLDemo', 'TestData', [rfReplaceAll, rfIgnoreCase]);

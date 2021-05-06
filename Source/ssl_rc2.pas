@@ -1,6 +1,7 @@
 unit ssl_rc2;
 
 interface
+
 uses ssl_types;
 
 var
@@ -15,6 +16,7 @@ var
 procedure SSL_Initrc2;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_Initrc2;

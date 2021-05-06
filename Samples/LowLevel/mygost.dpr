@@ -23,7 +23,6 @@ var
   GostLib: AnsiString;
   E: PENGINE;
 
-
 // Callback for keygen
 function  EVP_KEYGENCB(ctx: PEVP_PKEY_CTX): TC_INT; cdecl;
 begin
@@ -86,7 +85,6 @@ begin
     raise Exception.Create('Error create cipher context');
 end;
 
-
 procedure EncryptDecryptGOST(AKey: PEVP_PKEY);
 var Dst, Src: AnsiString;
     inlen: TC_SIZE_T;
@@ -107,7 +105,6 @@ begin
  try
   Dst := '';
 
-
   repeat
    Buf := OpenSSL_malloc(outlen);
    outBuf := PAnsiChar(Copy(Src, 1, 32));
@@ -119,7 +116,6 @@ begin
   Writeln('ENCRYPTED Data: ');
   for i := 0 to Length(EncMsg) - 1 do
     Writeln(EncMsg[I]);
-
 
   Decrypt(PAnsiChar(EncMsg[0]), Length(EncMsg[0]), nil, outlen, AKey);
   Src := '';
@@ -144,7 +140,6 @@ begin
  end;
 
 end;
-
 
 procedure GenerateGOST2001Key;
 var
@@ -202,9 +197,6 @@ begin
   end;
 end;
 
-
-
-
 begin
   Writeln('mygost');
   Writeln('DEMO load gost.dll');
@@ -240,7 +232,6 @@ begin
          GenerateGOST2001Key;
       end else
        raise Exception.Create('Library gost.dll not found!');
-
 
   except
 

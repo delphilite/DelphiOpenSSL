@@ -1,5 +1,6 @@
 unit ssl_cms;
 interface
+
 uses ssl_types;
 
 var
@@ -22,7 +23,6 @@ var
   d2i_CMS_ReceiptRequest: function(a: PPCMS_ReceiptRequest; _in: PPAnsiChar; len: TC_LONG): PCMS_ReceiptRequest; cdecl = nil;
   i2d_CMS_ReceiptRequest: function(a: PCMS_ReceiptRequest; _out: PPAnsiChar): TC_INT; cdecl = nil;
   CMS_ReceiptRequest_it: function: PASN1_ITEM; cdecl = nil;
-
 
 	//CMS_stream: function(unsigned char ***boundary; _cms: PCMS_ContentInfo): TC_INT; cdecl = nil;
 	d2i_CMS_bio: function(_bp: PBIO; _cms: PPCMS_ContentInfo): PCMS_ContentInfo; cdecl = nil;
@@ -154,8 +154,8 @@ var
 procedure SSL_InitCMS;
 		
 implementation
-uses ssl_lib;
 
+uses ssl_lib;
 
 procedure SSL_InitCMS;
 begin

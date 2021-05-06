@@ -2,14 +2,15 @@
 unit ssl_x509;
 
 interface
+
 uses ssl_types;
 
 var
   X509_new : function: PX509 cdecl = nil;
   X509_free : procedure(x: PX509) cdecl = nil;
-  X509_NAME_new : function :PX509_NAME cdecl = nil;
+  X509_NAME_new : function: PX509_NAME cdecl = nil;
   X509_NAME_free : procedure(x:PX509_NAME) cdecl = nil;
-  X509_REQ_new : function :PX509_REQ cdecl = nil;
+  X509_REQ_new : function: PX509_REQ cdecl = nil;
   X509_REQ_free : procedure(x:PX509_REQ) cdecl = nil;
   X509_to_X509_REQ : function(x: PX509; pkey: PEVP_PKEY; const md: PEVP_MD): PX509_REQ cdecl = nil;
   X509_NAME_add_entry_by_txt : function(name: PX509_NAME; const field: PAnsiChar; _type: TC_Int;
@@ -39,7 +40,6 @@ var
   i2d_PrivateKey_bio: function(bp: PBIO; pkey: PEVP_PKEY): TC_INT; cdecl = nil;
   d2i_PrivateKey_bio: function(bp: PBIO; a: PPEVP_PKEY): PEVP_PKEY; cdecl = nil;
 
-
 (*
 X509_CRL_METHOD *X509_CRL_METHOD_new: function(
     int (*crl_init)(X509_CRL *crl);
@@ -62,7 +62,6 @@ int X509_TRUST_add(int id; int flags; int (*ck)(X509_TRUST *; X509 *; int);
   X509_CRL_set_meth_data: procedure(crl: PX509_CRL; dat: Pointer); cdecl = nil;
   X509_CRL_get_meth_data: function(crl: PX509_CRL): Pointer; cdecl = nil;
   X509_verify_cert_error_string: function(n: TC_LONG): PAnsiChar; cdecl = nil;
-
 
   X509_verify: function(a: PX509; r: PEVP_PKEY): TC_INT; cdecl = nil;
 
@@ -95,7 +94,7 @@ int X509_TRUST_add(int id; int flags; int (*ck)(X509_TRUST *; X509 *; int);
   d2i_X509_bio: function(bp: PBIO; _x509: PPX509): PX509; cdecl = nil;
   i2d_X509_bio: function(bp: PBIO; _x509: PX509): TC_INT; cdecl = nil;
   d2i_X509_CRL_bio: function(bp: PBIO; crl: PPX509_CRL): PX509_CRL; cdecl = nil;
-  i2d_X509_CRL_bio: function(bp: PBIO; crl :PX509_CRL): TC_INT; cdecl = nil;
+  i2d_X509_CRL_bio: function(bp: PBIO; crl: PX509_CRL): TC_INT; cdecl = nil;
   d2i_X509_REQ_bio: function(bp: PBIO; req: PPX509_REQ): PX509_REQ; cdecl = nil;
   i2d_X509_REQ_bio: function(bp: PBIO; req: PX509_REQ): TC_INT; cdecl = nil;
 
@@ -677,7 +676,6 @@ int X509_TRUST_add(int id; int flags; int (*ck)(X509_TRUST *; X509 *; int);
   X509V3_EXT_d2i: function(ext: PX509_EXTENSION): pointer; cdecl = nil;
   X509V3_get_d2i: function(x: PSTACK_OF_X509_EXTENSION; _nid: TC_INT; var _crit: TC_INT; var _idx: TC_INT): Pointer; cdecl = nil;
 
-
   X509V3_EXT_i2d: function(_ext_nid: TC_INT; _crit: TC_INT; ext_struc: pointer): PX509_EXTENSION; cdecl = nil;
   X509V3_add1_i2d: function(x: PPSTACK_OF_X509_EXTENSION; _nid: TC_INT; value: pointer; _crit: TC_INT; s: TC_ULONG): TC_INT; cdecl = nil;
 
@@ -719,16 +717,15 @@ int X509_TRUST_add(int id; int flags; int (*ck)(X509_TRUST *; X509 *; int);
 
   X509_POLICY_NODE_print: procedure(_out: PBIO; node: PX509_POLICY_NODE; _indent: TC_INT); cdecl = nil;
 
-
   X509_STORE_new: function: PX509_STORE; cdecl = nil;
   X509_STORE_free: procedure(v : PX509_STORE); cdecl = nil;
   X509_STORE_add_cert: function(ctx: PX509_STORE; x: PX509): TC_INT; cdecl = nil;
-  X509_STORE_add_crl: function(ctx: PX509_STORE; x: PX509_CRL):  TC_INT; cdecl = nil;
-
+  X509_STORE_add_crl: function(ctx: PX509_STORE; x: PX509_CRL) : TC_INT; cdecl = nil;
 
 procedure SSL_InitX509;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitX509;

@@ -37,8 +37,8 @@ type
   TCipherProc = function : PEVP_CIPHER cdecl;
 
   TCipherInfo = record
-    Name :TCipherName;
-    Proc :TCipherProc;
+    Name: TCipherName;
+    Proc: TCipherProc;
   end;
 
   TCipherList = class(TList<TCipherInfo>)
@@ -51,14 +51,14 @@ type
     constructor Create; overload;
     destructor Destroy; override;
 
-    function Count :Integer;
-    function GetProc(const Name :TCipherName) :TCipherProc;
+    function Count: Integer;
+    function GetProc(const Name: TCipherName): TCipherProc;
   end;
 
   TEncUtil = class(TOpenSLLBase)
   private
     class var
-    FCipherList :TCipherList;
+    FCipherList: TCipherList;
     class constructor Create;
     class destructor Destroy;
   private
@@ -70,25 +70,25 @@ type
     procedure SetPassphrase(const Value: string);
     procedure SetCipher(const Value: TCipherName);
   public
-    class procedure RegisterCipher(const Name :TCipherName; Proc :TCipherProc);
+    class procedure RegisterCipher(const Name: TCipherName; Proc: TCipherProc);
     class procedure RegisterDefaultCiphers;
-    class procedure SupportedCiphers(Ciphers :TStrings);
+    class procedure SupportedCiphers(Ciphers: TStrings);
   public
     constructor Create; override;
     // will be encoded in UTF8
-    property Passphrase :string read GetPassphrase write SetPassphrase;
-    property BinaryPassphrase :TBytes read FPassphrase write FPassphrase;
+    property Passphrase: string read GetPassphrase write SetPassphrase;
+    property BinaryPassphrase: TBytes read FPassphrase write FPassphrase;
 
     // Encryption algorithm
-    property Cipher :TCipherName read FCipher write SetCipher;
+    property Cipher: TCipherName read FCipher write SetCipher;
 
     // Apply a further base64 encoding to the encrypted buffer
-    property UseBase64 :Boolean read FBase64 write FBase64;
+    property UseBase64: Boolean read FBase64 write FBase64;
 
-    procedure Encrypt(InputStream :TStream; OutputStream :TStream); overload;
-    procedure Encrypt(const InputFileName, OutputFileName :TFileName); overload;
-    procedure Decrypt(InputStream :TStream; OutputStream :TStream); overload;
-    procedure Decrypt(const InputFileName, OutputFileName :TFileName); overload;
+    procedure Encrypt(InputStream: TStream; OutputStream: TStream); overload;
+    procedure Encrypt(const InputFileName, OutputFileName: TFileName); overload;
+    procedure Decrypt(InputStream: TStream; OutputStream: TStream); overload;
+    procedure Decrypt(const InputFileName, OutputFileName: TFileName); overload;
   end;
 
 implementation
@@ -100,19 +100,19 @@ uses
 
 procedure TEncUtil.Decrypt(InputStream, OutputStream: TStream);
 var
-  Context :PEVP_CIPHER_CTX;
-  Key :TBytes;
-  InitVector :TBytes;
+  Context: PEVP_CIPHER_CTX;
+  Key: TBytes;
+  InitVector: TBytes;
 
-  InputBuffer :TBytes;
-  OutputLen :Integer;
-  OutputBuffer :TBytes;
-  Base64Buffer :TBytes;
+  InputBuffer: TBytes;
+  OutputLen: Integer;
+  OutputBuffer: TBytes;
+  Base64Buffer: TBytes;
 
   Cipher: PEVP_CIPHER;
-  Salt :TBytes;
-  BuffStart :Integer;
-  InputStart :Integer;
+  Salt: TBytes;
+  BuffStart: Integer;
+  InputStart: Integer;
 begin
   if Assigned(FCipherProc) then
     Cipher := FCipherProc()
@@ -174,20 +174,20 @@ end;
 
 procedure TEncUtil.Encrypt(InputStream, OutputStream: TStream);
 var
-  Context :PEVP_CIPHER_CTX;
+  Context: PEVP_CIPHER_CTX;
 
-  Key :TBytes;
-  InitVector :TBytes;
-  InputBuffer :TBytes;
-  OutputLen :Integer;
-  OutputBuffer :TBytes;
-  Base64Buffer :TBytes;
-  Salt :TBytes;
+  Key: TBytes;
+  InitVector: TBytes;
+  InputBuffer: TBytes;
+  OutputLen: Integer;
+  OutputBuffer: TBytes;
+  Base64Buffer: TBytes;
+  Salt: TBytes;
 
   cipher: PEVP_CIPHER;
-  BlockSize :Integer;
-  BuffStart :Integer;
-  WriteSalt :Boolean;
+  BlockSize: Integer;
+  BuffStart: Integer;
+  WriteSalt: Boolean;
 begin
   WriteSalt := True;
   BuffStart := 0;
@@ -249,7 +249,7 @@ end;
 
 procedure TEncUtil.Encrypt(const InputFileName, OutputFileName: TFileName);
 var
-  InputFile, OutputFile :TStream;
+  InputFile, OutputFile: TStream;
 begin
   InputFile := TFileStream.Create(InputFileName, fmOpenRead);
   try
@@ -272,7 +272,7 @@ end;
 class procedure TEncUtil.RegisterCipher(const Name: TCipherName;
   Proc: TCipherProc);
 var
-  Value :TCipherInfo;
+  Value: TCipherInfo;
 begin
   Value.Name := Name;
   Value.Proc := Proc;
@@ -389,8 +389,8 @@ end;
 
 class procedure TEncUtil.SupportedCiphers(Ciphers: TStrings);
 var
-  CipherInfo :TCipherInfo;
-  LocalCipherList :TList<TCipherInfo>;
+  CipherInfo: TCipherInfo;
+  LocalCipherList: TList<TCipherInfo>;
 begin
   RegisterDefaultCiphers;
   Ciphers.Clear;
@@ -416,7 +416,7 @@ end;
 
 procedure TEncUtil.Decrypt(const InputFileName, OutputFileName: TFileName);
 var
-  InputFile, OutputFile :TStream;
+  InputFile, OutputFile: TStream;
 begin
   InputFile := TFileStream.Create(InputFileName, fmOpenRead);
   try
@@ -440,7 +440,7 @@ end;
 
 function TCipherList.Count: Integer;
 var
-  LocalCipherList :TList<TCipherInfo>;
+  LocalCipherList: TList<TCipherInfo>;
 begin
   LocalCipherList := LockList;
   try
@@ -466,8 +466,8 @@ end;
 
 function TCipherList.GetProc(const Name: TCipherName): TCipherProc;
 var
-  CipherInfo :TCipherInfo;
-  LocalCipherList :TList<TCipherInfo>;
+  CipherInfo: TCipherInfo;
+  LocalCipherList: TList<TCipherInfo>;
 begin
   Result := nil;
   LocalCipherList := LockList;

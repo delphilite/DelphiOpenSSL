@@ -15,7 +15,6 @@ uses
   {$ENDIF FPC}
   ssl_types;
 
-
 var
   BIO_new: function(_type: PBIO_METHOD): PBIO; cdecl = nil;
   BIO_set: function(a: PBIO; _type: PBIO_METHOD): TC_INT; cdecl = nil;
@@ -76,9 +75,9 @@ var
   BIO_test_flags: function(b: PBIO; flags: TC_INT):TC_INT; cdecl = nil;
   BIO_clear_flags: procedure(b: PBIO; flags: TC_INT); cdecl = nil;
 
-  BIO_copy_next_retry: procedure(b :PBIO); cdecl = nil;
+  BIO_copy_next_retry: procedure(b: PBIO); cdecl = nil;
   BIO_ctrl_get_write_guarantee: function(b: PBIO): TC_size_t; cdecl = nil;
-  BIO_ctrl_get_read_request: function(b :PBIO): TC_SIZE_T; cdecl = nil;
+  BIO_ctrl_get_read_request: function(b: PBIO): TC_SIZE_T; cdecl = nil;
   BIO_ctrl_reset_read_request: function(b: PBIO): TC_INT; cdecl = nil;
   BIO_ctrl_pending_f: function(b: PBIO): TC_SIZE_T; cdecl = nil;
   BIO_ctrl_wpending: function(b: PBIO): TC_SIZE_T; cdecl = nil;
@@ -126,7 +125,6 @@ var
   BIO_set_ex_data: function (bio: PBIO; idx: TC_INT; data: pointer): TC_INT; cdecl = nil;
   BIO_sock_non_fatal_error: function(error: TC_INT): TC_INT; cdecl = nil;
   BIO_sock_should_retry: function(i: TC_INT): TC_INT; cdecl = nil;
-
 
 function BIO_get_mem_data (bp: PBIO; buf: Pointer): TC_ULONG; inline;
 function BIO_reset(bp: PBIO): TC_INT; inline;

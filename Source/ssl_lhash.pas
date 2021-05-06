@@ -1,6 +1,7 @@
 unit ssl_lhash;
 
 interface
+
 uses ssl_types;
 var
 	lh_new: function(h: LHASH_HASH_FN_TYPE; c: LHASH_COMP_FN_TYPE): P_LHASH; cdecl = nil;
@@ -19,6 +20,7 @@ var
 procedure SSL_InitLHASH;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitLHASH;

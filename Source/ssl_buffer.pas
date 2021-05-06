@@ -2,6 +2,7 @@
 unit ssl_buffer;
 
 interface
+
 uses ssl_types;
 var
   BUF_MEM_new: function: PBUF_MEM; cdecl = nil;
@@ -21,6 +22,7 @@ var
 procedure SSL_InitBuffer;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitBuffer;

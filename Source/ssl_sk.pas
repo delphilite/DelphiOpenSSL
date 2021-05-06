@@ -1,6 +1,7 @@
 unit ssl_sk;
 
 interface
+
 uses ssl_types;
 var
   sk_value: function (_stack: PSTACK_OF; _i: TC_INT): Pointer; cdecl = nil;
@@ -20,6 +21,7 @@ function sk_X509_push(_stak: PSTACK_OF_X509; data: Pointer): TC_INT;
 procedure SSL_initSk;
 
 implementation
+
 uses ssl_lib;
 
 function sk_X509_NAME_ENTRY_value(_stack: PSTACK_OF_X509_NAME_ENTRY; i: Integer): PX509_NAME_ENTRY;

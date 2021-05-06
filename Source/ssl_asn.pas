@@ -1,6 +1,7 @@
 unit ssl_asn;
 
 interface
+
 uses ssl_types;
 var
   ASN_ANY_it: function: PASN1_ITEM;
@@ -14,7 +15,7 @@ var
   ASN1_PCTX_get_cert_flags: function(p: PASN1_PCTX): TC_ULONG; cdecl = nil;
   ASN1_PCTX_set_cert_flags: procedure(p : PASN1_PCTX; flags: TC_ULONG); cdecl = nil;
   ASN1_PCTX_get_oid_flags: function(p: PASN1_PCTX): TC_ULONG; cdecl = nil;
-  ASN1_PCTX_set_oid_flags: procedure(p :ASN1_PCTX; flags: TC_ULONG);
+  ASN1_PCTX_set_oid_flags: procedure(p: ASN1_PCTX; flags: TC_ULONG);
   ASN1_PCTX_get_str_flags: function(p : PASN1_PCTX): TC_ULONG; cdecl = nil;
   ASN1_PCTX_set_str_flags: procedure(p: PASN1_PCTX; flags: TC_ULONG); cdecl = nil;
 
@@ -25,7 +26,6 @@ var
   ASN1_STRING_TABLE_get: function(nid: TC_INT): PASN1_STRING_TABLE; cdecl = nil;
   ASN1_STRING_TABLE_add: function(_par1: TC_INT; _par2: TC_LONG; _par3: TC_LONG; _par4: TC_ULONG; _par5: TC_ULONG): TC_INT; cdecl = nil;
   ASN1_STRING_TABLE_cleanup: procedure; cdecl = nil;
-
 
   ASN1_TYPE_get: function(a: PASN1_TYPE): TC_INT; cdecl = nil;
   ASN1_TYPE_set: procedure(a: PASN1_TYPE; _type: TC_INT; value: Pointer); cdecl = nil;
@@ -48,7 +48,6 @@ var
   i2t_ASN1_OBJECT: function(buf: PAnsiChar;buf_len: TC_INT; a: PASN1_OBJECT): TC_INT; cdecl = nil;
   a2d_ASN1_OBJECT: function(_out: PAnsiChar; olen: TC_INT; buf: PAnsiChar;num: TC_INT): TC_INT; cdecl = nil;
   i2a_ASN1_OBJECT: function(bp: PBIO; a: PASN1_OBJECT): TC_INT; cdecl = nil;
-
 
   ASN1_STRING_new: function: PASN1_STRING; cdecl = nil;
   ASN1_STRING_free : procedure(a: PASN1_STRING) cdecl = nil;
@@ -137,8 +136,6 @@ var
   d2i_ASN1_UINTEGER: function (a: PPASN1_INTEGER; pp: PPAnsiChar; _length: TC_LONG): PASN1_INTEGER; cdecl = nil;
   i2a_ASN1_INTEGER: function(bp: PBIO; a: PASN1_INTEGER): TC_INT; cdecl = nil;
   a2i_ASN1_INTEGER: function(bp: PBIO; bs: PASN1_INTEGER; buf: PAnsiChar;size: TC_INT): TC_INT;
-
-
 
   ASN1_GENERALIZEDTIME_new: function: PASN1_GENERALIZEDTIME; cdecl = nil;
   ASN1_GENERALIZEDTIME_free: procedure(a: PASN1_GENERALIZEDTIME); cdecl = nil;
@@ -235,7 +232,6 @@ var
 				 d2i_of_void *d2i, void (*free_func)(OPENSSL_BLOCK));
    *)
 
-
   ASN1_add_oid_module: procedure; cdecl = nil;
   ASN1_bn_print: function(bp: PBIO; number: PAnsiChar; num: PBIGNUM;buf: PAnsiChar; off: TC_INT): TC_INT; cdecl = nil;
   ASN1_check_infinite_end: function(p: PPAnsiChar; len: TC_LONG): TC_INT; cdecl = nil;
@@ -294,13 +290,11 @@ procedure M_ASN1_STRING_length_set(x : PASN1_STRING; n : TC_INT);
 function M_ASN1_STRING_type(x : PASN1_STRING) : TC_INT;
 function M_ASN1_STRING_data(x : PASN1_STRING) : PAnsiChar;
 
-
 procedure SSL_InitASN1;
 
 implementation
+
 uses ssl_lib;
-
-
 
 procedure SSL_InitASN1;
 begin
@@ -329,7 +323,6 @@ begin
       @ASN1_STRING_TABLE_get:= LoadFunctionCLib('ASN1_STRING_TABLE_get');
       @ASN1_STRING_TABLE_add:= LoadFunctionCLib('ASN1_STRING_TABLE_add');
       @ASN1_STRING_TABLE_cleanup:= LoadFunctionCLib('ASN1_STRING_TABLE_cleanup');
-
 
       @ASN1_TYPE_get := LoadFunctionCLib('ASN1_TYPE_get');
       @ASN1_TYPE_set:= LoadFunctionCLib('ASN1_TYPE_set');
@@ -412,7 +405,6 @@ begin
       @ASN1_BOOLEAN_it:= LoadFunctionCLib('ASN1_BOOLEAN_it');
       @ASN1_FBOOLEAN_it:= LoadFunctionCLib('ASN1_FBOOLEAN_it');
       @ASN1_TBOOLEAN_it:= LoadFunctionCLib('ASN1_TBOOLEAN_it');
-
 
       @ASN1_ENUMERATED_new:= LoadFunctionCLib('ASN1_ENUMERATED_new');
       @ASN1_ENUMERATED_free:= LoadFunctionCLib('ASN1_ENUMERATED_free');
@@ -584,7 +576,6 @@ begin
       @ASN1_d2i_bio:= LoadFunctionCLib('ASN1_d2i_bio');
       @ASN1_d2i_fp:= LoadFunctionCLib('ASN1_d2i_fp');
 
-
   end;
 end;
 
@@ -607,6 +598,5 @@ function M_ASN1_STRING_data(x : PASN1_STRING) : PAnsiChar; inline;
 begin
   Result := x^.data;
 end;
-
 
 end.

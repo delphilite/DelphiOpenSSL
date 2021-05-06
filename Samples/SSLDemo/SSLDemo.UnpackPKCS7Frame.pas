@@ -62,7 +62,7 @@ end;
 
 constructor TUnpackPKCS7Frame.Create(AOwner: TComponent);
 var
-  TestFolder :string;
+  TestFolder: string;
 begin
   inherited;
   TestFolder := StringReplace(ExtractFilePath(ParamStr(0)), 'Samples\SSLDemo', 'TestData', [rfReplaceAll, rfIgnoreCase]);

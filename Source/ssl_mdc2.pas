@@ -1,6 +1,7 @@
 unit ssl_mdc2;
 
 interface
+
 uses ssl_types;
 
 var
@@ -13,6 +14,7 @@ var
 procedure SSL_InitMDC2;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitMDC2;

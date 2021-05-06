@@ -1,5 +1,6 @@
 unit ssl_comp;
 interface
+
 uses ssl_types;
 var
     COMP_CTX_new: function(meth: PCOMP_METHOD): PCOMP_CTX; cdecl = nil;
@@ -14,6 +15,7 @@ var
 procedure SSL_InitCOMP;
     
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitCOMP;

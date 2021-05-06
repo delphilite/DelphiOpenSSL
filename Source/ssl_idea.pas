@@ -1,6 +1,7 @@
 unit ssl_idea;
 
 interface
+
 uses ssl_types;
 
 var
@@ -17,6 +18,7 @@ var
 procedure SSL_InitIDEA;
 
 implementation
+
 uses ssl_lib;
 
 procedure SSL_InitIDEA;
