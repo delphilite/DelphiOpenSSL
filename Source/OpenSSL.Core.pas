@@ -24,7 +24,7 @@ unit OpenSSL.Core;
 interface
 
 uses
-  System.Classes, System.SysUtils, ssl_types;
+  System.Classes, System.SysUtils, IdSSLOpenSSLHeaders, OpenSSL.libeay32;
 
 type
   TRASPadding = (
@@ -41,7 +41,7 @@ type
     FErrorCode: Integer;
   public
     constructor Create(Code: Integer; const Msg: string);
-    property  ErrorCode: Integer read FErrorCode;
+    property ErrorCode: Integer read FErrorCode;
   end;
 
   TOpenSLLBase = class
@@ -52,27 +52,24 @@ type
 
 const
   SALT_MAGIC: AnsiString = 'Salted__';
-  SALT_MAGIC_LEN: integer = 8;
+  SALT_MAGIC_LEN: Integer = 8;
   SALT_SIZE = 8;
 
-function  GetOpenSSLErrorMessage: string;
+function GetOpenSSLErrorMessage: string;
 
 procedure RaiseOpenSSLError(const AMessage: string = '');
 
-function  EVP_GetSalt: TBytes;
+function EVP_GetSalt: TBytes;
 
 procedure EVP_GetKeyIV(APassword: TBytes; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
 // Password will be encoded in UTF-8 if you want another encodig use the TBytes version
 procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
-function  Base64Encode(InputBuffer: TBytes): TBytes;
-function  Base64Decode(InputBuffer: TBytes): TBytes;
+function Base64Encode(InputBuffer: TBytes): TBytes;
+function Base64Decode(InputBuffer: TBytes): TBytes;
 
 implementation
-
-uses
-  ssl_bio, ssl_const, ssl_err, ssl_evp, ssl_rand, OpenSSL.LibEay32;
 
 function Base64Encode(InputBuffer: TBytes): TBytes;
 var
@@ -88,7 +85,7 @@ begin
   BIO_flush(b64);
 
   bdata := nil;
-  datalen := BIO_get_mem_data(bio, @bdata);
+  datalen := OpenSSL.libeay32.BIO_get_mem_data(bio, @bdata);
   SetLength(Result, datalen);
   Move(bdata^, Result[0], datalen);
 

@@ -28,7 +28,8 @@ unit OpenSSL.SMIMEUtils;
 interface
 
 uses
-  System.SysUtils, System.Classes, OpenSSL.Core;
+  System.Classes, System.SysUtils,
+  OpenSSL.libeay32, OpenSSL.Core, IdSSLOpenSSLHeaders;
 
 type
   TSMIMEUtil = class(TOpenSLLBase)
@@ -37,9 +38,6 @@ type
   end;
 
 implementation
-
-uses
-  ssl_const, ssl_bio, ssl_pkcs7, ssl_types, ssl_x509;
 
 { TSMIMEUtil }
 
@@ -71,7 +69,7 @@ begin
       RaiseOpenSSLError('BIO_new_file');
 
     LPKCS7 := nil;
-    LPKCS7 := d2i_PKCS7_bio(LInput, @LPKCS7);
+    LPKCS7 := d2i_PKCS7_bio(LInput, LPKCS7);
 
     if not Assigned(LPKCS7) then
       RaiseOpenSSLError('FSMIME_read_PKCS7');

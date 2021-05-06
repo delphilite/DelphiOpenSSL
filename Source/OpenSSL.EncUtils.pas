@@ -28,31 +28,38 @@ unit OpenSSL.EncUtils;
 interface
 
 uses
-  System.SysUtils, System.Classes, System.SyncObjs, Generics.Collections,
-  ssl_types, OpenSSL.Core;
+  System.Classes, System.SysUtils, System.AnsiStrings, Generics.Collections,
+  OpenSSL.libeay32, OpenSSL.Core, IdSSLOpenSSLHeaders;
 
 type
   TCipherName = string;
 
-  TCipherProc = function : PEVP_CIPHER cdecl;
+  TCipherProc = function: PEVP_CIPHER cdecl;
 
   TCipherInfo = record
     Name: TCipherName;
     Proc: TCipherProc;
   end;
 
-  TCipherList = class(TList<TCipherInfo>)
-  private
-    FLock: TCriticalSection;
-  private
-    function LockList: TCipherList;
-    procedure UnlockList;
+  TCipherList = class(TThreadList<TCipherInfo>)
   public
-    constructor Create; overload;
-    destructor Destroy; override;
-
     function Count: Integer;
     function GetProc(const Name: TCipherName): TCipherProc;
+  end;
+
+  TPassphraseType = (ptNone, ptPassword, ptKeys);
+
+  TPassphrase = record
+  private
+    FType: TPassphraseType;
+    FValue: TBytes;
+    FKey: TBytes;
+    FInitVector: TBytes;
+  public
+    class operator Implicit(const Value: string): TPassphrase;
+    class operator Implicit(const Value: TBytes): TPassphrase;
+    constructor Create(const Key, InitVector: TBytes); overload;
+    constructor Create(const Password: string; Encoding: TEncoding); overload;
   end;
 
   TEncUtil = class(TOpenSLLBase)
@@ -62,12 +69,10 @@ type
     class constructor Create;
     class destructor Destroy;
   private
-    FPassphrase: TBytes;
+    FPassphrase: TPassphrase;
     FBase64: Boolean;
     FCipherProc: TCipherProc;
     FCipher: TCipherName;
-    function GetPassphrase: string;
-    procedure SetPassphrase(const Value: string);
     procedure SetCipher(const Value: TCipherName);
   public
     class procedure RegisterCipher(const Name: TCipherName; Proc: TCipherProc);
@@ -76,8 +81,7 @@ type
   public
     constructor Create; override;
     // will be encoded in UTF8
-    property Passphrase: string read GetPassphrase write SetPassphrase;
-    property BinaryPassphrase: TBytes read FPassphrase write FPassphrase;
+    property Passphrase: TPassphrase read FPassphrase write FPassphrase;
 
     // Encryption algorithm
     property Cipher: TCipherName read FCipher write SetCipher;
@@ -92,9 +96,6 @@ type
   end;
 
 implementation
-
-uses
-  ssl_const, ssl_evp;
 
 { TEncUtil }
 
@@ -131,19 +132,32 @@ begin
     InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
   end;
 
-  SetLength(Salt, SALT_SIZE);
-  // First read the magic text and the Salt - if any
-  if (AnsiString(TEncoding.ASCII.GetString(InputBuffer, 0, SALT_MAGIC_LEN)) = SALT_MAGIC) then
+  if FPassphrase.FType = ptPassword then
   begin
-    Move(InputBuffer[SALT_MAGIC_LEN], Salt[0], SALT_SIZE);
-    EVP_GetKeyIV(FPassphrase, Cipher, Salt, Key, InitVector);
-    InputStart := SALT_MAGIC_LEN + SALT_SIZE;
+    SetLength(Salt, SALT_SIZE);
+    if (AnsiString(TEncoding.ASCII.GetString(InputBuffer, 0, SALT_MAGIC_LEN)) = SALT_MAGIC) then
+    begin
+      if Length(FPassphrase.FValue) = 0 then
+        raise EOpenSSLError.Create('Password needed');
+
+      Move(InputBuffer[SALT_MAGIC_LEN], Salt[0], SALT_SIZE);
+      EVP_GetKeyIV(FPassphrase.FValue, Cipher, Salt, Key, InitVector);
+      InputStart := SALT_MAGIC_LEN + SALT_SIZE;
+    end
+    else
+    begin
+      EVP_GetKeyIV(FPassphrase.FValue, Cipher, nil, Key, InitVector);
+      InputStart := 0;
+    end;
+  end
+  else if FPassphrase.FType = ptKeys then
+  begin
+    Key := FPassphrase.FKey;
+    InitVector := FPassphrase.FInitVector;
+    InputStart := 0;
   end
   else
-  begin
-    EVP_GetKeyIV(FPassphrase, Cipher, nil, Key, InitVector);
-    InputStart := 0;
-  end;
+    raise EOpenSSLError.Create('Password needed');
 
   Context := EVP_CIPHER_CTX_new();
   if Context = nil then
@@ -156,11 +170,11 @@ begin
 
     SetLength(OutputBuffer, InputStream.Size);
     BuffStart := 0;
-    if EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
+    if OpenSSL.libeay32.EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
       RaiseOpenSSLError('Cannot decrypt');
     Inc(BuffStart, OutputLen);
 
-    if EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
+    if OpenSSL.libeay32.EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
       RaiseOpenSSLError('Cannot finalize decryption process');
     Inc(BuffStart, OutputLen);
 
@@ -187,17 +201,27 @@ var
   cipher: PEVP_CIPHER;
   BlockSize: Integer;
   BuffStart: Integer;
-  WriteSalt: Boolean;
 begin
-  WriteSalt := True;
   BuffStart := 0;
+  SetLength(Salt, 0);
 
   if Assigned(FCipherProc) then
     cipher := FCipherProc()
   else
     cipher := EVP_aes_256_cbc();
-  salt := EVP_GetSalt;
-  EVP_GetKeyIV(FPassphrase, cipher, salt, key, InitVector);
+
+  if FPassphrase.FType = ptPassword then
+  begin
+    salt := EVP_GetSalt;
+    EVP_GetKeyIV(FPassphrase.FValue, cipher, salt, key, InitVector);
+  end
+  else if FPassphrase.FType = ptKeys then
+  begin
+    Key := FPassphrase.FKey;
+    InitVector := FPassphrase.FInitVector;
+  end
+  else
+    raise EOpenSSLError.Create('Password needed');
 
   SetLength(InputBuffer, InputStream.Size);
   InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
@@ -211,7 +235,7 @@ begin
       RaiseOpenSSLError('Cannot initialize encryption process');
 
     BlockSize := EVP_CIPHER_CTX_block_size(Context);
-    if WriteSalt then
+    if Length(salt) > 0 then
     begin
       SetLength(OutputBuffer, Length(InputBuffer) + BlockSize + SALT_MAGIC_LEN + PKCS5_SALT_LEN);
       Move(PAnsiChar(SALT_MAGIC)^, OutputBuffer[BuffStart], SALT_MAGIC_LEN);
@@ -222,11 +246,11 @@ begin
     else
       SetLength(OutputBuffer, Length(InputBuffer) + BlockSize);
 
-    if EVP_EncryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[0], Length(InputBuffer)) <> 1 then
+    if EVP_EncryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[0], Length(InputBuffer)) <> 1 then
       RaiseOpenSSLError('Cannot encrypt');
     Inc(BuffStart, OutputLen);
 
-    if EVP_EncryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
+    if EVP_EncryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> 1 then
       RaiseOpenSSLError('Cannot finalize encryption process');
     Inc(BuffStart, OutputLen);
     SetLength(OutputBuffer, BuffStart);
@@ -262,11 +286,6 @@ begin
   finally
     InputFile.Free;
   end;
-end;
-
-function TEncUtil.GetPassphrase: string;
-begin
-  Result := TEncoding.UTF8.GetString(FPassphrase);
 end;
 
 class procedure TEncUtil.RegisterCipher(const Name: TCipherName;
@@ -382,11 +401,6 @@ begin
   FCipher := Value;
 end;
 
-procedure TEncUtil.SetPassphrase(const Value: string);
-begin
-  FPassphrase := TEncoding.UTF8.GetBytes(Value);
-end;
-
 class procedure TEncUtil.SupportedCiphers(Ciphers: TStrings);
 var
   CipherInfo: TCipherInfo;
@@ -450,20 +464,6 @@ begin
   end;
 end;
 
-constructor TCipherList.Create;
-begin
-  inherited Create;
-
-  FLock := TCriticalSection.Create;
-end;
-
-destructor TCipherList.Destroy;
-begin
-  FreeAndNil(FLock);
-
-  inherited;
-end;
-
 function TCipherList.GetProc(const Name: TCipherName): TCipherProc;
 var
   CipherInfo: TCipherInfo;
@@ -480,15 +480,31 @@ begin
   end;
 end;
 
-function TCipherList.LockList: TCipherList;
+{ TPassphrase }
+
+constructor TPassphrase.Create(const Key, InitVector: TBytes);
 begin
-  FLock.Enter;
-  Result := Self;
+  FType := ptKeys;
+  FKey := Key;
+  FInitVector := InitVector;
 end;
 
-procedure TCipherList.UnlockList;
+constructor TPassphrase.Create(const Password: string; Encoding: TEncoding);
 begin
-  FLock.Leave;
+  FType := ptPassword;
+  FValue := Encoding.GetBytes(Password);
+end;
+
+class operator TPassphrase.Implicit(const Value: string): TPassphrase;
+begin
+  Result.FType := ptPassword;
+  Result.FValue := TEncoding.UTF8.GetBytes(Value);
+end;
+
+class operator TPassphrase.Implicit(const Value: TBytes): TPassphrase;
+begin
+  Result.FType := ptPassword;
+  Result.FValue := Value;
 end;
 
 end.

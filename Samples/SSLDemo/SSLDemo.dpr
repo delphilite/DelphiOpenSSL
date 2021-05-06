@@ -23,14 +23,26 @@ program SSLDemo;
 
 uses
   Vcl.Forms,
-  SSLDemo.MainForm in 'SSLDemo.MainForm.pas' {MainForm},
+
+  OpenSSL.Core in '..\..\Source\OpenSSL.Core.pas',
+  OpenSSL.EncUtils in '..\..\Source\OpenSSL.EncUtils.pas',
+  OpenSSL.libeay32 in '..\..\Source\OpenSSL.libeay32.pas',
+  OpenSSL.RandUtils in '..\..\Source\OpenSSL.RandUtils.pas',
+  OpenSSL.RSAUtils in '..\..\Source\OpenSSL.RSAUtils.pas',
+  OpenSSL.SMIMEUtils in '..\..\Source\OpenSSL.SMIMEUtils.pas',
+
+  SSLDemo.EncFrame in 'SSLDemo.EncFrame.pas' {EncFrame: TFrame},
+  SSLDemo.KeyPairFrame in 'SSLDemo.KeyPairFrame.pas' {KeyPairFrame: TFrame},
   SSLDemo.MainFrame in 'SSLDemo.MainFrame.pas' {MainFrame: TFrame},
+  SSLDemo.RandFrame in 'SSLDemo.RandFrame.pas' {RandomFrame: TFrame},
   SSLDemo.RSABufferFrame in 'SSLDemo.RSABufferFrame.pas' {RSABufferFrame: TFrame},
-  SSLDemo.EncFrame in 'SSLDemo.EncFrame.pas' {EncFrame: TFrame};
+  SSLDemo.UnpackPKCS7Frame in 'SSLDemo.UnpackPKCS7Frame.pas' {UnpackPKCS7Frame: TFrame},
+  SSLDemo.MainForm in 'SSLDemo.MainForm.pas' {MainForm};
 
 {$R *.res}
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
   Application.Initialize;
   Application.MainFormOnTaskbar := True;
   Application.CreateForm(TMainForm, MainForm);

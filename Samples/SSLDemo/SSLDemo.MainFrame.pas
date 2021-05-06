@@ -1,4 +1,4 @@
-{******************************************************************************}
+﻿{******************************************************************************}
 {                                                                              }
 {  Delphi OPENSSL Library                                                      }
 {  Copyright (c) 2016 Luca Minuti                                              }
@@ -51,10 +51,15 @@ type
     Label9: TLabel;
     Label10: TLabel;
     edtP7MTestFile: TEdit;
+    Label11: TLabel;
+    BtnGenerateKeyPairs: TButton;
+    Label12: TLabel;
+    Label13: TLabel;
     procedure btnCryptWithKeyClick(Sender: TObject);
     procedure btnDecryptWithKeyClick(Sender: TObject);
     procedure btnCryptWithCertClick(Sender: TObject);
     procedure btnGenerateSampleFileClick(Sender: TObject);
+    procedure BtnGenerateKeyPairsClick(Sender: TObject);
   private
     procedure PassphraseReader(Sender: TObject; var Passphrase: string);
   public
@@ -66,7 +71,7 @@ implementation
 {$R *.dfm}
 
 uses
-  OpenSSL.RSAUtils;
+  OpenSSL.RSAUtils, System.IOUtils;
 
 { TMainForm }
 
@@ -91,7 +96,7 @@ begin
   try
     RSAUtil.PrivateKey.OnNeedPassphrase := PassphraseReader;
     RSAUtil.PrivateKey.LoadFromFile(edtPriv.Text);
-    RSAUtil.PrivateDecrypt(edtTextToCrypt.Text + '.certcry', edtTextToCrypt.Text + '.certdecry.txt');
+    RSAUtil.PrivateDecrypt(edtTextToCrypt.Text + '.keycry', edtTextToCrypt.Text + '.certdecry.txt');
   finally
     RSAUtil.Free;
   end;
@@ -124,7 +129,7 @@ begin
   SL := TStringList.Create;
   try
     SL.Text := 'Hello, world!';
-    SL.SaveToFile(edtTextToCrypt.Text);
+    SL.SaveToFile(edtTextToCrypt.Text, TEncoding.Unicode);
   finally
     SL.Free;
   end;
@@ -135,7 +140,7 @@ var
   TestFolder: string;
 begin
   inherited;
-  TestFolder := StringReplace(ExtractFilePath(ParamStr(0)), 'Samples\SSLDemo', 'TestData', [rfReplaceAll, rfIgnoreCase]);
+  TestFolder := StringReplace(ExtractFilePath(ParamStr(0)), 'Samples' + PathDelim + 'SSLDemo', 'TestData', [rfReplaceAll, rfIgnoreCase]);
 
   edtCertFile.Text := TestFolder + 'publiccert.pem';
   edtPriv.Text := TestFolder + 'privatekey.pem';
@@ -147,6 +152,20 @@ end;
 procedure TMainFrame.PassphraseReader(Sender: TObject; var Passphrase: string);
 begin
   Passphrase := InputBox(Name, 'Passphrase', '');
+end;
+
+procedure TMainFrame.BtnGenerateKeyPairsClick(Sender: TObject);
+var
+  KeyPair: TRSAKeyPair;
+begin
+  KeyPair := TRSAKeyPair.Create;
+  try
+    KeyPair.GenerateKey;
+    KeyPair.PrivateKey.SaveToFile(edtPriv.Text);
+    KeyPair.PublicKey.SaveToFile(edtPub.Text);
+  finally
+    KeyPair.Free;
+  end;
 end;
 
 end.

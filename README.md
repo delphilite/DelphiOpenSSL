@@ -1,13 +1,16 @@
 # Delphi OpenSSL Library
 
-[Delphi](http://www.embarcadero.com/products/delphi) implementation of [OpenSSL](https://openssl.org/).
+[Delphi](http://www.embarcadero.com/products/delphi) wrapper for [OpenSSL](https://openssl.org/).
 
 ## Features
 
 - Encrypt/Decrypt using RSA algorithm
-- Symmetric cipher routines (for now only AES256)
+- Symmetric cipher routines
 - Base64 encoding e decoding
 - Basic PAM support
+- Generation of pseudo-random bit strings
+- Basic SMIME support
+- Generate RSA KeyPairs in PKCS PEM format
 
 ## Usage
 
@@ -20,8 +23,7 @@
 
 *Source code:*
 
-```
-#!delphi
+```delphi
 var
   RSAUtil :TRSAUtil;
   Cerificate :TX509Cerificate;
@@ -50,8 +52,7 @@ end;
 
 *Source code:*
 
-```
-#!delphi
+```delphi
 var
   RSAUtil :TRSAUtil;
 begin
@@ -74,8 +75,7 @@ end;
 
 *Source code:*
 
-```
-#!delphi
+```delphi
 var
   RSAUtil :TRSAUtil;
 begin
@@ -90,13 +90,37 @@ begin
 end;
 ```
 
+### Encrypt with AES256
+
+*Command line:*
+
+    OpenSSL enc -base64 -aes256 -in text.plain -out text.aes256 -k secure
+
+
+*Source code:*
+
+```delphi
+var
+  EncUtil :TEncUtil;
+begin
+  EncUtil := TEncUtil.Create;
+  try
+    EncUtil.UseBase64 := True;
+    EncUtil.Passphrase := 'secure';
+    EncUtil.Cipher := 'AES-256';
+    EncUtil.Encrypt('text.plain', 'text.aes256');
+  finally
+    EncUtil.Free;
+  end;
+end;
+```
+
 
 ## Todo
 
 - Symmetric cryptography (partially done)
 - compute hash functions
 - Sign e verify
-- Generation of pseudo-random bit strings
 - RSA data management
 - Data managing for X509
 - Manage information according to the PKCS #12 standard

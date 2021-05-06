@@ -1,1 +1,0 @@
-{$DEFINE AES_LONG}
