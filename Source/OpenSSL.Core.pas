@@ -32,7 +32,7 @@ type
     rpOAEP,           // use PKCS#1 OAEP
     rpSSL,            // use SSL v2 padding
     rpRAW             // use no padding
-    );
+  );
 
   EOpenSSLError = Exception;
 
@@ -41,7 +41,7 @@ type
     FErrorCode: Integer;
   public
     constructor Create(Code: Integer; const Msg: string);
-    property ErrorCode: Integer read FErrorCode;
+    property  ErrorCode: Integer read FErrorCode;
   end;
 
   TOpenSLLBase = class
@@ -55,19 +55,19 @@ const
   SALT_MAGIC_LEN: integer = 8;
   SALT_SIZE = 8;
 
-function GetOpenSSLErrorMessage: string;
+function  GetOpenSSLErrorMessage: string;
 
 procedure RaiseOpenSSLError(const AMessage: string = '');
 
-function EVP_GetSalt: TBytes;
+function  EVP_GetSalt: TBytes;
 
 procedure EVP_GetKeyIV(APassword: TBytes; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
 // Password will be encoded in UTF-8 if you want another encodig use the TBytes version
 procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
-function Base64Encode(InputBuffer: TBytes): TBytes;
-function Base64Decode(InputBuffer: TBytes): TBytes;
+function  Base64Encode(InputBuffer: TBytes): TBytes;
+function  Base64Decode(InputBuffer: TBytes): TBytes;
 
 implementation
 

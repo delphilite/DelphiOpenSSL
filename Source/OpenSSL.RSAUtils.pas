@@ -30,11 +30,11 @@ uses
 type
   TX509Cerificate = class;
 
-  TPassphraseEvent = procedure (Sender: TObject; var Passphrase: string) of object;
+  TRSAPassphraseEvent = procedure (Sender: TObject; var Passphrase: string) of object;
 
   TRSAKey = class(TOpenSLLBase)
   public
-    function IsValid: Boolean; virtual; abstract;
+    function  IsValid: Boolean; virtual; abstract;
     procedure LoadFromFile(const FileName: string); virtual; abstract;
     procedure LoadFromStream(AStream: TStream); virtual; abstract;
   end;
@@ -45,13 +45,15 @@ type
     FBuffer: TBytes;
     FRSA: PRSA;
     FCerificate: TX509Cerificate;
+  private
+    function  GetRSA: PRSA;
     procedure FreeRSA;
-    function GetRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
-    function Print: string;
-    function IsValid: Boolean; override;
+
+    function  Print: string;
+    function  IsValid: Boolean; override;
     procedure LoadFromFile(const FileName: string); override;
     procedure LoadFromStream(AStream: TStream); override;
     procedure LoadFromCertificate(Cerificate: TX509Cerificate);
@@ -62,17 +64,19 @@ type
   private
     FBuffer: TBytes;
     FRSA: PRSA;
-    FOnNeedPassphrase: TPassphraseEvent;
+    FOnNeedPassphrase: TRSAPassphraseEvent;
+  private
+    function  GetRSA: PRSA;
     procedure FreeRSA;
-    function GetRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
-    function IsValid: Boolean; override;
-    function Print: string;
+
+    function  IsValid: Boolean; override;
+    function  Print: string;
     procedure LoadFromFile(const FileName: string); override;
     procedure LoadFromStream(AStream: TStream); override;
-    property OnNeedPassphrase: TPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
+    property  OnNeedPassphrase: TRSAPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
   end;
 
   // certificate containing an RSA public key
@@ -81,15 +85,16 @@ type
     FBuffer: TBytes;
     FPublicRSA: PRSA;
     FX509: pX509;
+  private
+    function  GetPublicRSA: PRSA;
     procedure FreeRSA;
     procedure FreeX509;
-    function GetPublicRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function IsValid: Boolean;
-    function Print: string;
+    function  IsValid: Boolean;
+    function  Print: string;
     procedure LoadFromFile(const FileName: string);
     procedure LoadFromStream(AStream: TStream);
   end;
@@ -101,13 +106,14 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
+
     procedure PublicEncrypt(InputStream: TStream; OutputStream: TStream; Padding: TRASPadding = rpPKCS); overload;
     procedure PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRASPadding = rpPKCS); overload;
     procedure PrivateDecrypt(InputStream: TStream; OutputStream: TStream; Padding: TRASPadding = rpPKCS); overload;
     procedure PrivateDecrypt(const InputFileName, OutputFileName: TFileName; Padding: TRASPadding = rpPKCS); overload;
 
-    property PublicKey: TRSAPublicKey read FPublicKey;
-    property PrivateKey: TRSAPrivateKey read FPrivateKey;
+    property  PublicKey: TRSAPublicKey read FPublicKey;
+    property  PrivateKey: TRSAPrivateKey read FPrivateKey;
   end;
 
 implementation
@@ -128,7 +134,7 @@ const
 
 // rwflag is a flag set to 0 when reading and 1 when writing
 // The u parameter has the same value as the u parameter passed to the PEM routines
-function ReadKeyCallback(buf: PAnsiChar; buffsize: integer; rwflag: integer; u: pointer): integer; cdecl;
+function ReadKeyCallback(buf: PAnsiChar; buffsize: Integer; rwflag: Integer; u: Pointer): Integer; cdecl;
 
   function StrLCopy(Dest: PAnsiChar; const Source: PAnsiChar; MaxLen: Cardinal): PAnsiChar;
   var

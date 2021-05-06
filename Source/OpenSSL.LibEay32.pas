@@ -36,7 +36,7 @@ implementation
 
 uses
   Winapi.Windows, ssl_bio, ssl_err, ssl_evp, ssl_pem, ssl_pkcs7, ssl_rand,
-  ssl_rsa, ssl_util, ssl_x509;
+  ssl_dsa, ssl_rsa, ssl_util, ssl_x509;
 
 const
   LIBEAY_DLL_NAME = 'libeay32.dll';
@@ -88,6 +88,7 @@ begin
   SSL_InitPEM;
   SSL_InitPKCS7;
   SSL_InitRAND;
+  SSL_InitDSA;
   SSL_InitRSA;
   SSL_InitUtil;
   SSL_InitX509;
