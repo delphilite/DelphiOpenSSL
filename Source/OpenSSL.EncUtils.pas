@@ -28,21 +28,29 @@ unit OpenSSL.EncUtils;
 interface
 
 uses
-  System.Classes, System.SysUtils, System.AnsiStrings, Generics.Collections,
-  OpenSSL.libeay32, OpenSSL.Core, IdSSLOpenSSLHeaders;
+  System.SysUtils, System.Classes, System.Generics.Collections, System.SyncObjs,
+  OpenSSL.Core, OpenSSL.Api_11;
 
 type
   TCipherName = string;
 
-  TCipherProc = function: PEVP_CIPHER cdecl;
+  TCipherProc = function (): PEVP_CIPHER cdecl;
 
   TCipherInfo = record
     Name: TCipherName;
     Proc: TCipherProc;
   end;
 
-  TCipherList = class(TThreadList<TCipherInfo>)
+  TCipherList = class(TList<TCipherInfo>) { TThreadList }
+  private
+    FLock: TCriticalSection;
+  private
+    function  LockList: TList<TCipherInfo>;
+    procedure UnlockList;
   public
+    constructor Create; reintroduce;
+    destructor Destroy; override;
+
     function Count: Integer;
     function GetProc(const Name: TCipherName): TCipherProc;
   end;
@@ -170,11 +178,11 @@ begin
 
     SetLength(OutputBuffer, InputStream.Size);
     BuffStart := 0;
-    if OpenSSL.libeay32.EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
+    if EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
       RaiseOpenSSLError('Cannot decrypt');
     Inc(BuffStart, OutputLen);
 
-    if OpenSSL.libeay32.EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], OutputLen) <> 1 then
+    if EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> 1 then
       RaiseOpenSSLError('Cannot finalize decryption process');
     Inc(BuffStart, OutputLen);
 
@@ -300,7 +308,6 @@ end;
 
 class procedure TEncUtil.RegisterDefaultCiphers;
 begin
-  CheckOpenSSLLibrary;
   if FCipherList.Count = 0 then
   begin
 
@@ -464,6 +471,18 @@ begin
   end;
 end;
 
+constructor TCipherList.Create;
+begin
+  inherited Create;
+  FLock := TCriticalSection.Create;
+end;
+
+destructor TCipherList.Destroy;
+begin
+  FreeAndNil(FLock);
+  inherited;
+end;
+
 function TCipherList.GetProc(const Name: TCipherName): TCipherProc;
 var
   CipherInfo: TCipherInfo;
@@ -478,6 +497,17 @@ begin
   finally
     UnlockList;
   end;
+end;
+
+function TCipherList.LockList: TList<TCipherInfo>;
+begin
+  FLock.Enter;
+  Result := Self;
+end;
+
+procedure TCipherList.UnlockList;
+begin
+  FLock.Leave;
 end;
 
 { TPassphrase }

@@ -81,6 +81,7 @@
 			<DelphiCompile Include="$(MainSource)">
 				<MainSource>MainSource</MainSource>
 			</DelphiCompile>
+			<DCCReference Include="..\..\Source\OpenSSL.Api_11.pas"/>
 			<DCCReference Include="..\..\Source\OpenSSL.Core.pas"/>
 			<DCCReference Include="..\..\Source\OpenSSL.EncUtils.pas"/>
 			<DCCReference Include="..\..\Source\OpenSSL.libeay32.pas"/>

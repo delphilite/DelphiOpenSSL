@@ -19,15 +19,21 @@
 {  limitations under the License.                                              }
 {                                                                              }
 {******************************************************************************}
+
 unit OpenSSL.Core;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, IdSSLOpenSSLHeaders, OpenSSL.libeay32;
+  System.SysUtils, OpenSSL.Api_11;
+
+const
+  SALT_MAGIC: AnsiString  = 'Salted__';
+  SALT_MAGIC_LEN: Integer = 8;
+  SALT_SIZE               = 8;
 
 type
-  TRASPadding = (
+  TRSAPadding = (
     rpPKCS,           // use PKCS#1 v1.5 padding (default),
     rpOAEP,           // use PKCS#1 OAEP
     rpSSL,            // use SSL v2 padding
@@ -45,31 +51,33 @@ type
   end;
 
   TOpenSLLBase = class
+  private
+    class constructor Create;
   public
-    class procedure CheckOpenSSLLibrary; static;
     constructor Create; virtual;
   end;
 
-const
-  SALT_MAGIC: AnsiString = 'Salted__';
-  SALT_MAGIC_LEN: Integer = 8;
-  SALT_SIZE = 8;
+  function  Base64Encode(InputBuffer: TBytes): TBytes;
+  function  Base64Decode(InputBuffer: TBytes): TBytes;
 
-function GetOpenSSLErrorMessage: string;
+  function  BIO_flush(b : PBIO): Integer;
+  function  BIO_get_mem_data(b: PBIO; pp: Pointer): Integer;
+  function  BIO_to_string(b: PBIO; Encoding: TEncoding): string; overload;
+  function  BIO_to_string(b: PBIO): string; overload;
 
-procedure RaiseOpenSSLError(const AMessage: string = '');
+  function  EVP_GetSalt: TBytes;
+  procedure EVP_GetKeyIV(APassword: TBytes; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
+  { Password will be encoded in UTF-8 if you want another encodig use the TBytes version }
+  procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
 
-function EVP_GetSalt: TBytes;
+  procedure OPENSSL_free(address: Pointer);
 
-procedure EVP_GetKeyIV(APassword: TBytes; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
-
-// Password will be encoded in UTF-8 if you want another encodig use the TBytes version
-procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes); overload;
-
-function Base64Encode(InputBuffer: TBytes): TBytes;
-function Base64Decode(InputBuffer: TBytes): TBytes;
+  function  GetOpenSSLErrorMessage: string;
+  procedure RaiseOpenSSLError(const AMessage: string = '');
 
 implementation
+
+
 
 function Base64Encode(InputBuffer: TBytes): TBytes;
 var
@@ -85,7 +93,7 @@ begin
   BIO_flush(b64);
 
   bdata := nil;
-  datalen := OpenSSL.libeay32.BIO_get_mem_data(bio, @bdata);
+  datalen := BIO_get_mem_data(bio, @bdata);
   SetLength(Result, datalen);
   Move(bdata^, Result[0], datalen);
 
@@ -114,6 +122,35 @@ begin
   end;
 end;
 
+function BIO_flush(b : PBIO): Integer;
+begin
+  Result := BIO_ctrl(b, BIO_CTRL_FLUSH, 0, nil);
+end;
+
+function BIO_get_mem_data(b: PBIO; pp: Pointer): Integer;
+begin
+  Result := BIO_ctrl(b,BIO_CTRL_INFO,0,pp);
+end;
+
+function BIO_to_string(b: PBIO; Encoding: TEncoding): string;
+const
+  BuffSize = 1024;
+var
+  Buffer: TBytes;
+begin
+  Result := '';
+  SetLength(Buffer, BuffSize);
+  while BIO_read(b, buffer, BuffSize) > 0 do
+  begin
+    Result := Result + Encoding.GetString(Buffer);
+  end;
+end;
+
+function BIO_to_string(b: PBIO): string; overload;
+begin
+  Result := BIO_to_string(b, TEncoding.ANSI);
+end;
+
 function EVP_GetSalt: TBytes;
 begin
   SetLength(result, PKCS5_SALT_LEN);
@@ -131,6 +168,11 @@ end;
 procedure EVP_GetKeyIV(APassword: string; ACipher: PEVP_CIPHER; const ASalt: TBytes; out Key, IV: TBytes);
 begin
   EVP_GetKeyIV(TEncoding.UTF8.GetBytes(APassword), ACipher, ASalt, Key, IV);
+end;
+
+procedure OPENSSL_free(address: Pointer);
+begin
+  CRYPTO_free(address, nil, 0);
 end;
 
 function GetOpenSSLErrorMessage: string;
@@ -157,16 +199,14 @@ end;
 
 { TOpenSLLBase }
 
+class constructor TOpenSLLBase.Create;
+begin
+  ERR_load_crypto_strings();
+end;
+
 constructor TOpenSLLBase.Create;
 begin
   inherited;
-  CheckOpenSSLLibrary;
-end;
-
-class procedure TOpenSLLBase.CheckOpenSSLLibrary;
-begin
-  if not LoadOpenSSLLibraryEx then
-    raise EOpenSSLError.Create('Cannot open "OpenSSL" library');
 end;
 
 { EOpenSSLLibError }

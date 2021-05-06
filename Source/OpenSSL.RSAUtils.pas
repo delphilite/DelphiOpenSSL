@@ -19,13 +19,13 @@
 {  limitations under the License.                                              }
 {                                                                              }
 {******************************************************************************}
+
 unit OpenSSL.RSAUtils;
 
 interface
 
 uses
-  System.Classes, System.SysUtils, System.AnsiStrings, OpenSSL.libeay32,
-  OpenSSL.Core, IdSSLOpenSSLHeaders;
+  System.SysUtils, System.Classes, OpenSSL.Core, OpenSSL.Api_11;
 
 type
   TX509Cerificate = class;
@@ -143,16 +143,18 @@ type
   public
     constructor Create; override;
     destructor Destroy; override;
-    procedure PublicEncrypt(InputStream: TStream; OutputStream: TStream; Padding: TRASPadding = rpPKCS); overload;
-    procedure PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRASPadding = rpPKCS); overload;
-    procedure PrivateDecrypt(InputStream: TStream; OutputStream: TStream; Padding: TRASPadding = rpPKCS); overload;
-    procedure PrivateDecrypt(const InputFileName, OutputFileName: TFileName; Padding: TRASPadding = rpPKCS); overload;
+    procedure PublicEncrypt(InputStream: TStream; OutputStream: TStream; Padding: TRSAPadding = rpPKCS); overload;
+    procedure PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding = rpPKCS); overload;
+    procedure PrivateDecrypt(InputStream: TStream; OutputStream: TStream; Padding: TRSAPadding = rpPKCS); overload;
+    procedure PrivateDecrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding = rpPKCS); overload;
 
     property PublicKey: TCustomRSAPublicKey read FPublicKey write SetPublicKey;
     property PrivateKey: TCustomRSAPrivateKey read FPrivateKey write SetPrivateKey;
   end;
 
 implementation
+
+
 
 type
   TRSAKeyPairPrivateKey = class(TCustomRSAPrivateKey)
@@ -176,7 +178,7 @@ type
   end;
 
 const
-  PaddingMap: array [TRASPadding] of Integer = (RSA_PKCS1_PADDING, RSA_PKCS1_OAEP_PADDING, RSA_SSLV23_PADDING, RSA_NO_PADDING);
+  PaddingMap: array [TRSAPadding] of Integer = (RSA_PKCS1_PADDING, RSA_PKCS1_OAEP_PADDING, RSA_SSLV23_PADDING, RSA_NO_PADDING);
 
 // rwflag is a flag set to 0 when reading and 1 when writing
 // The u parameter has the same value as the u parameter passed to the PEM routines
@@ -197,14 +199,14 @@ begin
         Len := Length(Password)
       else
         Len := buffsize;
-      System.AnsiStrings.StrPLCopy(buf, AnsiString(Password), Len);
+      StrPLCopy(buf, AnsiString(Password), Len);
       Result := Len;
     end;
   end;
 end;
 
 
-procedure TRSAUtil.PublicEncrypt(InputStream, OutputStream: TStream; Padding: TRASPadding);
+procedure TRSAUtil.PublicEncrypt(InputStream, OutputStream: TStream; Padding: TRSAPadding);
 var
   InputBuffer: TBytes;
   OutputBuffer: TBytes;
@@ -245,7 +247,7 @@ begin
 end;
 
 procedure TRSAUtil.PrivateDecrypt(InputStream, OutputStream: TStream;
-  Padding: TRASPadding);
+  Padding: TRSAPadding);
 var
   InputBuffer: TBytes;
   OutputBuffer: TBytes;
@@ -269,7 +271,7 @@ begin
 end;
 
 procedure TRSAUtil.PrivateDecrypt(const InputFileName,
-  OutputFileName: TFileName; Padding: TRASPadding);
+  OutputFileName: TFileName; Padding: TRSAPadding);
 var
   InputFile, OutputFile: TStream;
 begin
@@ -287,7 +289,7 @@ begin
 end;
 
 procedure TRSAUtil.PublicEncrypt(const InputFileName, OutputFileName: TFileName;
-  Padding: TRASPadding);
+  Padding: TRSAPadding);
 var
   InputFile, OutputFile: TStream;
 begin

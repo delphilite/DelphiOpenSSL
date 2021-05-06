@@ -4,8 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes,
-  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, System.NetEncoding,
-  System.IOUtils;
+  Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
 
 type
   TRandomFrame = class(TFrame)
@@ -23,7 +22,7 @@ type
 implementation
 
 uses
-  OpenSSL.RandUtils;
+  Soap.EncdDecd, OpenSSL.RandUtils;
 
 {$R *.dfm}
 
@@ -32,7 +31,7 @@ var
   Buffer: TBytes;
 begin
   Buffer := TRandUtil.GetRandomBytes(StrToInt(EditSize.Text));
-  EditResult.Text := TNetEncoding.Base64.EncodeBytesToString(Buffer);
+  EditResult.Text := string(EncodeBase64(Pointer(Buffer), Length(Buffer)));
 end;
 
 end.

@@ -28,8 +28,7 @@ unit OpenSSL.SMIMEUtils;
 interface
 
 uses
-  System.Classes, System.SysUtils,
-  OpenSSL.libeay32, OpenSSL.Core, IdSSLOpenSSLHeaders;
+  System.SysUtils, System.Classes, OpenSSL.Core;
 
 type
   TSMIMEUtil = class(TOpenSLLBase)
@@ -38,6 +37,47 @@ type
   end;
 
 implementation
+
+uses
+  OpenSSL.Api_11;
+
+type
+  TC_INT   = LongInt;
+  TC_LONG  = LongInt;
+  TC_ULONG = LongWord;
+
+  BIO_METHOD = record
+    _type : TC_INT;
+    name : PAnsiChar;
+    bwrite : function(_para1 : PBIO; _para2 : PAnsiChar; _para3 : TC_Int) : TC_Int; cdecl;
+    bread : function(_para1: PBIO; _para2: PAnsiChar; _para3: TC_Int) : TC_Int; cdecl;
+    bputs : function (_para1 : PBIO; _para2 : PAnsiChar) : TC_Int; cdecl;
+    bgets : function (_para1 : PBIO; _para2 : PAnsiChar; _para3 : TC_Int) : TC_Int; cdecl;
+    ctrl : function (_para1 : PBIO; _para2 : TC_Int; _para3 : TC_LONG; _para4 : Pointer) : TC_LONG; cdecl;
+    create : function(_para1 : PBIO) : TC_Int; cdecl;
+    destroy : function (_para1 : PBIO) : TC_Int; cdecl;
+    callback_ctrl : function (_para1 : PBIO; _para2 : TC_Int; _para3 : pbio_info_cb): TC_LONG; cdecl;
+  end;
+
+  BIO = record
+    method : PBIO_METHOD;
+    callback : function (_para1 : PBIO; _para2 : TC_INT; _para3 : PAnsiChar;
+       _para4 : TC_INT; _para5, _para6 : TC_LONG) : TC_LONG cdecl;
+    cb_arg : PAnsiChar;
+    init : TC_INT;
+    shutdown : TC_INT;
+    flags : TC_INT;
+    retry_reason : TC_INT;
+    num : TC_INT;
+    ptr : Pointer;
+    next_bio : PBIO;
+    prev_bio : PBIO;
+    references : TC_INT;
+    num_read : TC_ULONG;
+    num_write : TC_ULONG;
+    ex_data : CRYPTO_EX_DATA;
+  end;
+  PBIO = ^BIO;
 
 { TSMIMEUtil }
 
@@ -50,7 +90,6 @@ var
   LFlags, LOutputLen: Integer;
   LOutputBuffer, LInputBuffer: TBytes;
 begin
-
   Result := 0;
   LFlags := 0;
   if NoVerify then
@@ -69,7 +108,7 @@ begin
       RaiseOpenSSLError('BIO_new_file');
 
     LPKCS7 := nil;
-    LPKCS7 := d2i_PKCS7_bio(LInput, LPKCS7);
+    LPKCS7 := d2i_PKCS7_bio(LInput, @LPKCS7);
 
     if not Assigned(LPKCS7) then
       RaiseOpenSSLError('FSMIME_read_PKCS7');

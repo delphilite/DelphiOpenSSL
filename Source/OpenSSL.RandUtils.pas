@@ -56,7 +56,7 @@ type
 implementation
 
 uses
-  OpenSSL.libeay32, OpenSSL.Core;
+  OpenSSL.Api_11, OpenSSL.Core;
 
 { TRandUtil }
 

@@ -71,7 +71,7 @@ implementation
 {$R *.dfm}
 
 uses
-  OpenSSL.RSAUtils, System.IOUtils;
+  OpenSSL.RSAUtils;
 
 { TMainForm }
 
