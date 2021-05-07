@@ -103,9 +103,13 @@ type
     constructor Create; override;
     destructor Destroy; override;
 
+    function  PublicVerify(const Input, Output: TBytes): Boolean; overload;
+    function  PrivateSign(const Input: TBytes): TBytes; overload;
+
     function  PublicVerify(InputStream: TStream; OutputStream: TStream): Boolean; overload;
-    function  PublicVerify(const InputFileName, OutputFileName: TFileName): Boolean; overload;
     procedure PrivateSign(InputStream: TStream; OutputStream: TStream); overload;
+
+    function  PublicVerify(const InputFileName, OutputFileName: TFileName): Boolean; overload;
     procedure PrivateSign(const InputFileName, OutputFileName: TFileName); overload;
 
     property  PublicKey: TDSAPublicKey read FPublicKey;
@@ -130,11 +134,33 @@ begin
   inherited;
 end;
 
+function TDSAUtil.PrivateSign(const Input: TBytes): TBytes;
+var
+  Output: TBytes;
+  OutLen, Ret: Integer;
+begin
+  if not PrivateKey.IsValid then
+    raise Exception.Create('Private key not assigned');
+  if (Input = nil) or (Length(Input) = 0) then
+  begin
+    Result := nil;
+    Exit;
+  end;
+  OutLen := 1024; { DSA_size(FPrivateKey.GetDSA) }
+  SetLength(Output, OutLen);
+  Ret := DSA_sign(0, PByte(Input), Length(Input), PByte(Output), @OutLen, FPrivateKey.GetDSA);
+  if Ret <> 1 then
+    RaiseOpenSSLError('DSA sign error');
+  if OutLen <= 0 then
+    RaiseOpenSSLError('DSA operation error');
+  Result := Copy(Output, 0, OutLen);
+end;
+
 procedure TDSAUtil.PrivateSign(const InputFileName, OutputFileName: TFileName);
 var
   InputFile, OutputFile: TStream;
 begin
-  InputFile := TFileStream.Create(InputFileName, fmOpenRead);
+  InputFile := TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
     OutputFile := TFileStream.Create(OutputFileName, fmCreate);
     try
@@ -174,13 +200,30 @@ begin
   OutputStream.Write(OutputBuffer[0], DSAOutLen);
 end;
 
+function TDSAUtil.PublicVerify(const Input, Output: TBytes): Boolean;
+var
+  Ret: Integer;
+begin
+  if not PublicKey.IsValid then
+    raise Exception.Create('Public key not assigned');
+  if (Input = nil) or (Length(Input) = 0) then
+  begin
+    Result := Length(Output) = 0;
+    Exit;
+  end;
+  Ret := DSA_verify(0, PByte(Input), Length(Input), PByte(Output), Length(Output), FPublicKey.GetDSA);
+  Result := Ret = 1;
+  if Ret <= 0 then
+    RaiseOpenSSLError('DSA operation error');
+end;
+
 function TDSAUtil.PublicVerify(const InputFileName, OutputFileName: TFileName): Boolean;
 var
   InputFile, OutputFile: TStream;
 begin
-  InputFile := TFileStream.Create(InputFileName, fmOpenRead);
+  InputFile := TFileStream.Create(InputFileName, fmOpenRead or fmShareDenyWrite);
   try
-    OutputFile := TFileStream.Create(OutputFileName, fmCreate);
+    OutputFile := TFileStream.Create(OutputFileName, fmOpenRead or fmShareDenyWrite);
     try
       Result := PublicVerify(InputFile, OutputFile);
     finally

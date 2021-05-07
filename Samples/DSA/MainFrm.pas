@@ -50,7 +50,7 @@ begin
       FDSA.PrivateSign(S, R);
       SetLength(D, R.Size);
       Move(R.Memory^, Pointer(D)^, R.Size);
-      D := Base64Encode(D, True);
+      D := Base64Encode(D);
       R.Position := 0;
       R.Size := Length(D);
       Move(Pointer(D)^, R.Memory^, R.Size);

@@ -44,19 +44,20 @@ type
     constructor Create; virtual;
   end;
 
-  function  Base64Encode(const ABuffer: TBytes;
-    AWrapLines: Boolean = False): TBytes;
-  function  Base64Decode(const ABuffer: TBytes): TBytes;
+  function  Base64Encode(const AData: Pointer;
+    const ASize: Integer): TBytes; overload;
+  function  Base64Decode(const AData: Pointer;
+    const ASize: Integer): TBytes; overload;
+  function  Base64Encode(const AData: TBytes): TBytes; overload;
+  function  Base64Decode(const AData: TBytes): TBytes; overload;
 
-  function  BufferToHex(const ABuffer; ASize: Integer;
-    ALowerCase: Boolean = True): string;
-  function  BytesToHex(const AData: TBytes;
-    ALowerCase: Boolean = True): string;
-  function  HexToBytes(const ABuffer; ASize: Integer): TBytes; overload;
-  function  HexToBytes(const S: string): TBytes; overload;
+  function  BytesToHex(const AData: TBytes; ALowerCase: Boolean = True): string;
+  function  HexToBytes(const AData: Pointer; ASize: Integer): TBytes; overload;
+  function  HexToBytes(const AData: string): TBytes; overload;
 
   function  BIO_flush(b: PBIO): Integer;
   function  BIO_get_mem_data(b: PBIO; pp: Pointer): Integer;
+  function  BIO_get_mem_ptr(b: PBIO; pp: Pointer): Integer;
   function  BIO_to_string(b: PBIO; Encoding: TEncoding): string; overload;
   function  BIO_to_string(b: PBIO): string; overload;
 
@@ -72,60 +73,180 @@ type
 
 implementation
 
-function Base64Encode(const ABuffer: TBytes; AWrapLines: Boolean = False): TBytes;
+function Base64Encode(const AData: Pointer; const ASize: Integer): TBytes;
+const
+  BASE64_ENCODE: array[0..64] of Byte = (
+    // A..Z
+    $41, $42, $43, $44, $45, $46, $47, $48, $49, $4A, $4B, $4C, $4D,
+    $4E, $4F, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $5A,
+    // a..z
+    $61, $62, $63, $64, $65, $66, $67, $68, $69, $6A, $6B, $6C, $6D,
+    $6E, $6F, $70, $71, $72, $73, $74, $75, $76, $77, $78, $79, $7A,
+    // 0..9
+    $30, $31, $32, $33, $34, $35, $36, $37, $38, $39,
+    // +, /, =
+    $2B, $2F, $3D
+  );
 var
-  bio, b64: PBIO;
-  bdata: Pointer;
-  datalen: Integer;
+  B: Byte;
+  B64: array [0..3] of Byte;
+  I, SrcIndex, DstIndex: Integer;
+  Src: PByte;
 begin
-  b64 := BIO_new(BIO_f_base64());
-  if not AWrapLines then
-    BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
-  bio := BIO_new(BIO_s_mem());
-  BIO_push(b64, bio);
-
-  BIO_write(b64, @ABuffer[0], Length(ABuffer));
-  BIO_flush(b64);
-
-  bdata := nil;
-  datalen := BIO_get_mem_data(bio, @bdata);
-  SetLength(Result, datalen);
-  Move(bdata^, Result[0], datalen);
-
-  BIO_free_all(b64);
-end;
-
-function Base64Decode(const ABuffer: TBytes): TBytes;
-var
-  bio, b64: PBIO;
-  datalen: Integer;
-begin
-  b64 := BIO_new(BIO_f_base64());
-  bio := BIO_new_mem_buf(ABuffer, Length(ABuffer));
-  try
-    BIO_push(b64, bio);
-
-    SetLength(Result, Length(ABuffer));
-    datalen := BIO_read(b64, @Result[0], Length(ABuffer));
-    if datalen < 0 then
-      RaiseOpenSSLError('Base64 error');
-
-    SetLength(Result, datalen);
-    BIO_flush(b64);
-  finally
-    BIO_free_all(b64);
+  if (AData = nil) or (ASize = 0) then
+  begin
+    Result := nil;
+    Exit;
   end;
+
+  SetLength(Result, ((ASize + 2) div 3) * 4);
+  Src := AData;
+  SrcIndex := 0;
+  DstIndex := 0;
+
+  while (SrcIndex < ASize) do
+  begin
+    B := Src[SrcIndex];
+    Inc(SrcIndex);
+
+    B64[0] := B shr 2;
+    B64[1] := (B and $03) shl 4;
+
+    if (SrcIndex < ASize) then
+    begin
+      B := Src[SrcIndex];
+      Inc(SrcIndex);
+
+      B64[1] := B64[1] + (B shr 4);
+      B64[2] := (B and $0F) shl 2;
+
+      if (SrcIndex < ASize) then
+      begin
+        B := Src[SrcIndex];
+        Inc(SrcIndex);
+
+        B64[2] := B64[2] + (B shr 6);
+        B64[3] := B and $3F;
+      end
+      else
+        B64[3] := $40;
+    end
+    else
+    begin
+      B64[2] := $40;
+      B64[3] := $40;
+    end;
+
+    for I := 0 to 3 do
+    begin
+      Assert(B64[I] < Length(BASE64_ENCODE));
+      Assert(DstIndex < Length(Result));
+      Result[DstIndex] := BASE64_ENCODE[B64[I]];
+      Inc(DstIndex);
+    end;
+  end;
+  SetLength(Result, DstIndex);
 end;
 
-function BufferToHex(const ABuffer; ASize: Integer; ALowerCase: Boolean): string;
+function Base64Encode(const AData: TBytes): TBytes;
+begin
+  if Assigned(AData) then
+    Result := Base64Encode(@AData[0], Length(AData))
+  else Result := nil;
+end;
+
+function Base64Decode(const AData: Pointer; const ASize: Integer): TBytes;
+const
+  BASE64_DECODE: array[0..255] of Byte = (
+    $FE, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $3E, $FF, $FF, $FF, $3F,
+    $34, $35, $36, $37, $38, $39, $3A, $3B, $3C, $3D, $FF, $FF, $FE, $FF, $FF, $FF,
+    $FF, $00, $01, $02, $03, $04, $05, $06, $07, $08, $09, $0A, $0B, $0C, $0D, $0E,
+    $0F, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $FF, $FF, $FF, $FF, $FF,
+    $FF, $1A, $1B, $1C, $1D, $1E, $1F, $20, $21, $22, $23, $24, $25, $26, $27, $28,
+    $29, $2A, $2B, $2C, $2D, $2E, $2F, $30, $31, $32, $33, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF,
+    $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF, $FF
+  );
+var
+  B: Byte;
+  C: Cardinal;
+  Src: PByte;
+  SrcIndex, DstIndex, Count: Integer;
+begin
+  if (AData = nil) or (ASize = 0) then
+  begin
+    Result := nil;
+    Exit;
+  end;
+
+  SetLength(Result, (ASize div 4) * 3 + 4);
+  Src := AData;
+  SrcIndex := 0;
+  DstIndex := 0;
+  C := 0;
+  Count := 4;
+
+  while (SrcIndex < ASize) do
+  begin
+    B := BASE64_DECODE[Src[SrcIndex]];
+    if (B = $FE) then
+      Break
+    else if (B <> $FF) then
+    begin
+      C := (C shl 6) or B;
+      Dec(Count);
+      if (Count = 0) then
+      begin
+        Result[DstIndex + 2] := Byte(C);
+        Result[DstIndex + 1] := Byte(C shr 8);
+        Result[DstIndex    ] := Byte(C shr 16);
+        Inc(DstIndex, 3);
+        C := 0;
+        Count := 4;
+      end;
+    end;
+    Inc(SrcIndex);
+  end;
+
+  if (Count = 1) then
+  begin
+    Result[DstIndex + 1] := Byte(C shr 2);
+    Result[DstIndex    ] := Byte(C shr 10);
+    Inc(DstIndex, 2);
+  end
+  else if (Count = 2) then
+  begin
+    Result[DstIndex] := Byte(C shr 4);
+    Inc(DstIndex);
+  end;
+
+  SetLength(Result, DstIndex);
+end;
+
+function Base64Decode(const AData: TBytes): TBytes;
+begin
+  if Assigned(AData) then
+    Result := Base64Decode(@AData[0], Length(AData))
+  else Result := nil;
+end;
+
+function BufferToHex(const AData: Pointer; ASize: Integer; ALowerCase: Boolean): string;
 type
   PHexCharMap = ^THexCharMap;
   THexCharMap = array[0..15] of Char;
 const
-  defCharConvertTableL: THexCharMap = (
+  HEXCHAR_MAPL: THexCharMap = (
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
   );
-  defCharConvertTableU: THexCharMap = (
+  HEXCHAR_MAPU: THexCharMap = (
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'
   );
 var
@@ -134,9 +255,9 @@ var
   pMap: PHexCharMap;
 begin
   if ALowerCase then
-    pMap := @defCharConvertTableL
-  else pMap := @defCharConvertTableU;
-  pData := @ABuffer;
+    pMap := @HEXCHAR_MAPL
+  else pMap := @HEXCHAR_MAPU;
+  pData := AData;
   SetLength(Result, 2 * ASize);
   pRet := PChar(Result);
   while ASize > 0 do
@@ -150,12 +271,12 @@ begin
   end;
 end;
 
-function BytesToHex(const AData: TBytes; ALowerCase: Boolean = True): string;
+function BytesToHex(const AData: TBytes; ALowerCase: Boolean): string;
 begin
-  Result := BufferToHex(Pointer(AData)^, Length(AData), ALowerCase);
+  Result := BufferToHex(Pointer(AData), Length(AData), ALowerCase);
 end;
 
-function HexToBytes(const ABuffer; ASize: Integer): TBytes;
+function HexToBytes(const AData: Pointer; ASize: Integer): TBytes;
 
   function HexByteToByte(B: Byte): Byte;
   begin
@@ -196,7 +317,7 @@ begin
   nLen := ASize shr 1;
   SetLength(Result, nLen);
   nIndex := 0;
-  pData := @ABuffer;
+  pData := AData;
   while nIndex < nLen do
   begin
     Result[nIndex] := HexWordToByte(pData^);
@@ -205,12 +326,12 @@ begin
   end;
 end;
 
-function HexToBytes(const S: string): TBytes;
+function HexToBytes(const AData: string): TBytes;
 var
   B: TBytes;
 begin
-  B := TEncoding.Default.GetBytes(S);
-  Result := HexToBytes(Pointer(B)^, Length(B));
+  B := TEncoding.Default.GetBytes(AData);
+  Result := HexToBytes(Pointer(B), Length(B));
 end;
 
 function BIO_flush(b: PBIO): Integer;
@@ -221,6 +342,11 @@ end;
 function BIO_get_mem_data(b: PBIO; pp: Pointer): Integer;
 begin
   Result := BIO_ctrl(b, BIO_CTRL_INFO, 0, pp);
+end;
+
+function BIO_get_mem_ptr(b: PBIO; pp: Pointer): Integer;
+begin
+  Result := BIO_ctrl(b, BIO_C_GET_BUF_MEM_PTR, 0, pp);
 end;
 
 function BIO_to_string(b: PBIO; Encoding: TEncoding): string;

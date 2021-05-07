@@ -82,8 +82,18 @@ object MainForm: TMainForm
       Height = 25
       Align = alRight
       Caption = 'SHA256'
-      Checked = True
       TabOrder = 4
+    end
+    object rbSHA512: TRadioButton
+      AlignWithMargins = True
+      Left = 141
+      Top = 3
+      Width = 75
+      Height = 25
+      Align = alRight
+      Caption = 'SHA512'
+      Checked = True
+      TabOrder = 5
       TabStop = True
     end
   end

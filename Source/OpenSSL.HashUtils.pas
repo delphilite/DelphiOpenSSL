@@ -30,69 +30,108 @@ unit OpenSSL.HashUtils;
 interface
 
 uses
-  System.SysUtils, OpenSSL.Api_11;
+  System.SysUtils, OpenSSL.Api_11, OpenSSL.Core;
 
 type
+  THashUtil = class(TOpenSSLBase)
+  public
+    // initialize Hash context for hashing
+    procedure Init; virtual; abstract;
+    // update the Hash context with some data
+    procedure Update(ABuffer: Pointer; ASize: integer); virtual; abstract;
+    // finalize and compute the resulting Hash hash Digest of all data
+    // affected to Update() method
+    procedure Final(out ADigest: TBytes); virtual; abstract;
+  public
+    // portal
+    class function Execute(const AData: TBytes): TBytes;
+  end;
+
   // handle MD4 hashing
-  TMD4 = record
+  TMD4 = class(THashUtil)
   private
     FContext: MD4_CTX;
   public
     // initialize MD4 context for hashing
-    procedure Init;
+    procedure Init; override;
     // update the MD4 context with some data
-    procedure Update(ABuffer: Pointer; ASize: integer);
+    procedure Update(ABuffer: Pointer; ASize: integer); override;
     // finalize and compute the resulting MD4 hash Digest of all data
     // affected to Update() method
-    procedure Final(out ADigest: TBytes);
+    procedure Final(out ADigest: TBytes); override;
   end;
 
   // handle MD5 hashing
-  TMD5 = record
+  TMD5 = class(THashUtil)
   private
     FContext: MD5_CTX;
   public
     // initialize MD5 context for hashing
-    procedure Init;
+    procedure Init; override;
     // update the MD5 context with some data
-    procedure Update(ABuffer: Pointer; ASize: integer);
+    procedure Update(ABuffer: Pointer; ASize: integer); override;
     // finalize and compute the resulting MD5 hash Digest of all data
     // affected to Update() method
-    procedure Final(out ADigest: TBytes);
+    procedure Final(out ADigest: TBytes); override;
   end;
 
   /// handle SHA1 hashing
-  TSHA1 = record
+  TSHA1 = class(THashUtil)
   private
     FContext: SHA_CTX;
   public
     // initialize SHA1 context for hashing
-    procedure Init;
+    procedure Init; override;
     // update the SHA1 context with some data
-    procedure Update(ABuffer: Pointer; ASize: integer);
+    procedure Update(ABuffer: Pointer; ASize: integer); override;
     // finalize and compute the resulting SHA1 hash Digest of all data
     // affected to Update() method
-    procedure Final(out ADigest: TBytes);
+    procedure Final(out ADigest: TBytes); override;
   end;
 
   /// handle SHA256 hashing
-  TSHA256 = record
+  TSHA256 = class(THashUtil)
   private
     FContext: SHA256_CTX;
   public
     // initialize SHA256 context for hashing
-    procedure Init;
+    procedure Init; override;
     // update the SHA256 context with some data
-    procedure Update(ABuffer: Pointer; ASize: integer);
+    procedure Update(ABuffer: Pointer; ASize: integer); override;
     // finalize and compute the resulting SHA256 hash Digest of all data
     // affected to Update() method
-    procedure Final(out ADigest: TBytes);
+    procedure Final(out ADigest: TBytes); override;
+  end;
+
+  /// handle SHA512 hashing
+  TSHA512 = class(THashUtil)
+  private
+    FContext: SHA512_CTX;
+  public
+    // initialize SHA512 context for hashing
+    procedure Init; override;
+    // update the SHA512 context with some data
+    procedure Update(ABuffer: Pointer; ASize: integer); override;
+    // finalize and compute the resulting SHA512 hash Digest of all data
+    // affected to Update() method
+    procedure Final(out ADigest: TBytes); override;
   end;
 
 implementation
 
-uses
-  OpenSSL.Core;
+{ THashUtil }
+
+class function THashUtil.Execute(const AData: TBytes): TBytes;
+begin
+  with Self.Create do
+  try
+    Init;
+    Update(Pointer(AData), Length(AData));
+    Final(Result);
+  finally
+    Free;
+  end;
+end;
 
 { TMD4 }
 
@@ -164,6 +203,24 @@ end;
 procedure TSHA256.Update(ABuffer: Pointer; ASize: integer);
 begin
   SHA256_Update(@FContext, ABuffer, ASize);
+end;
+
+{ TSHA512 }
+
+procedure TSHA512.Final(out ADigest: TBytes);
+begin
+  SetLength(ADigest, SHA512_DIGEST_LENGTH);
+  SHA512_Final(PByte(ADigest), @FContext);
+end;
+
+procedure TSHA512.Init;
+begin
+  SHA512_Init(@FContext);
+end;
+
+procedure TSHA512.Update(ABuffer: Pointer; ASize: integer);
+begin
+  SHA512_Update(@FContext, ABuffer, ASize);
 end;
 
 end.
