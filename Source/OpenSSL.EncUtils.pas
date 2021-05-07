@@ -70,7 +70,7 @@ type
     constructor Create(const Password: string; Encoding: TEncoding); overload;
   end;
 
-  TEncUtil = class(TOpenSLLBase)
+  TEncUtil = class(TOpenSSLBase)
   private
     class var
     FCipherList: TCipherList;

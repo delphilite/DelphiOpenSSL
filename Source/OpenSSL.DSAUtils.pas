@@ -1,8 +1,8 @@
 {******************************************************************************}
 {                                                                              }
 {  Delphi OPENSSL Library                                                      }
-{  Copyright (c) 2016 Luca Minuti                                              }
-{  https://bitbucket.org/lminuti/delphi-openssl                                }
+{  Copyright (c) 2021 Lsuper                                                   }
+{  https://github.com/delphilite/DelphiOpenSSL                                 }
 {                                                                              }
 {******************************************************************************}
 {                                                                              }
@@ -22,6 +22,9 @@
 
 unit OpenSSL.DSAUtils;
 
+// https://www.openssl.org/docs/man1.1.1/man3/DSA_sign.html
+// https://www.openssl.org/docs/man1.1.1/man3/DSA_verify.html
+
 interface
 
 uses
@@ -29,7 +32,7 @@ uses
 
 type
   // DSA base key
-  TDSAKey = class(TOpenSLLBase)
+  TDSAKey = class(TOpenSSLBase)
   public
     function  IsValid: Boolean; virtual; abstract;
     procedure LoadFromFile(const FileName: string); virtual; abstract;
@@ -73,7 +76,7 @@ type
   end;
 
   // Certificate containing an DSA public key
-  TDSACerificate = class(TOpenSLLBase)
+  TDSACerificate = class(TOpenSSLBase)
   private
     FBuffer: TBytes;
     FPublicDSA: PDSA;
@@ -92,7 +95,7 @@ type
     procedure LoadFromStream(AStream: TStream);
   end;
 
-  TDSAUtil = class(TOpenSLLBase)
+  TDSAUtil = class(TOpenSSLBase)
   private
     FPublicKey: TDSAPublicKey;
     FPrivateKey: TDSAPrivateKey;

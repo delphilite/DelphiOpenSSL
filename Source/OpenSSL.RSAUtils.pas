@@ -48,7 +48,7 @@ type
   TPassphraseEvent = procedure (Sender: TObject; var Passphrase: string) of object;
 
   // RSA public key
-  TCustomRSAPublicKey = class(TOpenSLLBase)
+  TCustomRSAPublicKey = class(TOpenSSLBase)
   private
     FBuffer: TBytes;
     FCerificate: TX509Cerificate;
@@ -79,7 +79,7 @@ type
   end;
 
   // RSA private key
-  TCustomRSAPrivateKey = class(TOpenSLLBase)
+  TCustomRSAPrivateKey = class(TOpenSSLBase)
   private
     FBuffer: TBytes;
     FOnNeedPassphrase: TPassphraseEvent;
@@ -110,7 +110,7 @@ type
   end;
 
   // certificate containing an RSA public key
-  TX509Cerificate = class(TOpenSLLBase)
+  TX509Cerificate = class(TOpenSSLBase)
   private
     FBuffer: TBytes;
     FPublicRSA: PRSA;
@@ -128,7 +128,7 @@ type
     procedure LoadFromStream(AStream: TStream);
   end;
 
-  TRSAKeyPair = class(TOpenSLLBase)
+  TRSAKeyPair = class(TOpenSSLBase)
   private
     FRSA: PRSA;
     FPrivateKey: TCustomRSAPrivateKey;
@@ -144,7 +144,7 @@ type
     destructor Destroy; override;
   end;
 
-  TRSAUtil = class(TOpenSLLBase)
+  TRSAUtil = class(TOpenSSLBase)
   private
     FPublicKey: TCustomRSAPublicKey;
     FPrivateKey: TCustomRSAPrivateKey;

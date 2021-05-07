@@ -31,7 +31,7 @@ uses
   System.SysUtils, System.Classes, OpenSSL.Core;
 
 type
-  TSMIMEUtil = class(TOpenSLLBase)
+  TSMIMEUtil = class(TOpenSSLBase)
   public
     function Decrypt(InputStream, OutputStream: TStream; Verify, NoVerify: Boolean): Integer;
   end;
