@@ -33,46 +33,31 @@ uses
 type
   // DSA base key
   TDSAKey = class(TOpenSSLBase)
+  private
+    FBuffer: TBytes;
+    FDSA: PDSA;
+  private
+    function  GetDSA: PDSA;
+    procedure FreeDSA;
   public
-    function  IsValid: Boolean; virtual; abstract;
-    procedure LoadFromFile(const FileName: string); virtual; abstract;
-    procedure LoadFromStream(AStream: TStream); virtual; abstract;
+    function  IsValid: Boolean;
+    function  Print: string;
+
+    procedure LoadFromBuffer(const AData: TBytes); virtual; abstract;
+    procedure LoadFromFile(const FileName: string);
+    procedure LoadFromStream(AStream: TStream);
   end;
 
   // DSA public key
   TDSAPublicKey = class(TDSAKey)
-  private
-    FBuffer: TBytes;
-    FDSA: PDSA;
-  private
-    function  GetDSA: PDSA;
-    procedure FreeDSA;
   public
-    constructor Create; override;
-    destructor Destroy; override;
-
-    function  Print: string;
-    function  IsValid: Boolean; override;
-    procedure LoadFromFile(const FileName: string); override;
-    procedure LoadFromStream(AStream: TStream); override;
+    procedure LoadFromBuffer(const AData: TBytes); override;
   end;
 
   // DSA private key
   TDSAPrivateKey = class(TDSAKey)
-  private
-    FBuffer: TBytes;
-    FDSA: PDSA;
-  private
-    function  GetDSA: PDSA;
-    procedure FreeDSA;
   public
-    constructor Create; override;
-    destructor Destroy; override;
-
-    function  IsValid: Boolean; override;
-    function  Print: string;
-    procedure LoadFromFile(const FileName: string); override;
-    procedure LoadFromStream(AStream: TStream); override;
+    procedure LoadFromBuffer(const AData: TBytes); override;
   end;
 
   // Certificate containing an DSA public key
@@ -164,7 +149,7 @@ begin
   try
     OutputFile := TFileStream.Create(OutputFileName, fmCreate);
     try
-      PrivateSign(InputFile, OutputFile);
+      Self.PrivateSign(InputFile, OutputFile);
     finally
       OutputFile.Free;
     end;
@@ -225,7 +210,7 @@ begin
   try
     OutputFile := TFileStream.Create(OutputFileName, fmOpenRead or fmShareDenyWrite);
     try
-      Result := PublicVerify(InputFile, OutputFile);
+      Result := Self.PublicVerify(InputFile, OutputFile);
     finally
       OutputFile.Free;
     end;
@@ -315,7 +300,7 @@ var
 begin
   Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
-    LoadFromStream(Stream);
+    Self.LoadFromStream(Stream);
   finally
     Stream.Free;
   end;
@@ -356,21 +341,9 @@ begin
   end;
 end;
 
-{ TDSAPrivateKey }
+{ TDSAKey }
 
-constructor TDSAPrivateKey.Create;
-begin
-  inherited;
-  FDSA := nil;
-end;
-
-destructor TDSAPrivateKey.Destroy;
-begin
-  FreeDSA;
-  inherited;
-end;
-
-procedure TDSAPrivateKey.FreeDSA;
+procedure TDSAKey.FreeDSA;
 begin
   if FDSA <> nil then
   begin
@@ -379,39 +352,59 @@ begin
   end;
 end;
 
-function TDSAPrivateKey.GetDSA: PDSA;
+function TDSAKey.GetDSA: PDSA;
 begin
-//  if Assigned(FCerificate) then
-//    Result := FCerificate.GetPublicDSA
-//  else
-    Result := FDSA;
+  Result := FDSA;
 end;
 
-function TDSAPrivateKey.IsValid: Boolean;
+function TDSAKey.IsValid: Boolean;
 begin
   Result := GetDSA <> nil;
 end;
 
-procedure TDSAPrivateKey.LoadFromFile(const FileName: string);
+procedure TDSAKey.LoadFromFile(const FileName: string);
 var
   Stream: TStream;
 begin
   Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
   try
-    LoadFromStream(Stream);
+    Self.LoadFromStream(Stream);
   finally
     Stream.Free;
   end;
 end;
 
-procedure TDSAPrivateKey.LoadFromStream(AStream: TStream);
+procedure TDSAKey.LoadFromStream(AStream: TStream);
+var
+  B: TBytes;
+begin
+  SetLength(B, AStream.Size);
+  AStream.ReadBuffer(Pointer(B)^, AStream.Size);
+  Self.LoadFromBuffer(B);
+end;
+
+function TDSAKey.Print: string;
+var
+  bp: PBIO;
+begin
+  bp := BIO_new(BIO_s_mem());
+  try
+    if DSA_print(bp, FDSA, 0) = 0 then
+      RaiseOpenSSLError('DSA_print');
+    Result := BIO_to_string(bp);
+  finally
+    BIO_free(bp);
+  end;
+end;
+
+{ TDSAPrivateKey }
+
+procedure TDSAPrivateKey.LoadFromBuffer(const AData: TBytes);
 var
   KeyBuffer: pBIO;
 begin
-  SetLength(FBuffer, AStream.Size);
-  AStream.ReadBuffer(FBuffer[0], AStream.Size);
+  FBuffer := AData;
   KeyBuffer := BIO_new_mem_buf(FBuffer, Length(FBuffer));
-
   if KeyBuffer = nil then
     RaiseOpenSSLError('DSA load stream error');
   try
@@ -423,71 +416,13 @@ begin
   end;
 end;
 
-function TDSAPrivateKey.Print: string;
-var
-  bp: PBIO;
-begin
-  bp := BIO_new(BIO_s_mem());
-  try
-    if DSA_print(bp, FDSA, 0) = 0 then
-      RaiseOpenSSLError('DSA_print');
-    Result := BIO_to_string(bp);
-  finally
-    BIO_free(bp);
-  end;
-end;
-
 { TDSAPublicKey }
 
-constructor TDSAPublicKey.Create;
-begin
-  inherited;
-  FDSA := nil;
-end;
-
-destructor TDSAPublicKey.Destroy;
-begin
-  FreeDSA;
-  inherited;
-end;
-
-procedure TDSAPublicKey.FreeDSA;
-begin
-  if FDSA <> nil then
-  begin
-    DSA_free(FDSA);
-    FDSA := nil;
-  end;
-end;
-
-function TDSAPublicKey.GetDSA: PDSA;
-begin
-  Result := FDSA;
-end;
-
-function TDSAPublicKey.IsValid: Boolean;
-begin
-  Result := GetDSA <> nil;
-end;
-
-procedure TDSAPublicKey.LoadFromFile(const FileName: string);
-var
-  Stream: TStream;
-begin
-  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-  try
-    LoadFromStream(Stream);
-  finally
-    Stream.Free;
-  end;
-end;
-
-procedure TDSAPublicKey.LoadFromStream(AStream: TStream);
+procedure TDSAPublicKey.LoadFromBuffer(const AData: TBytes);
 var
   KeyBuffer: pBIO;
 begin
-  SetLength(FBuffer, AStream.Size);
-  AStream.ReadBuffer(FBuffer[0], AStream.Size);
+  FBuffer := AData;
   KeyBuffer := BIO_new_mem_buf(FBuffer, Length(FBuffer));
   if KeyBuffer = nil then
     RaiseOpenSSLError('DSA load stream error');
@@ -497,20 +432,6 @@ begin
       RaiseOpenSSLError('DSA load public key error');
   finally
     BIO_free(KeyBuffer);
-  end;
-end;
-
-function TDSAPublicKey.Print: string;
-var
-  bp: PBIO;
-begin
-  bp := BIO_new(BIO_s_mem());
-  try
-    if DSA_print(bp, FDSA, 0) = 0 then
-      RaiseOpenSSLError('DSA_print');
-    Result := BIO_to_string(bp);
-  finally
-    BIO_free(bp);
   end;
 end;
 

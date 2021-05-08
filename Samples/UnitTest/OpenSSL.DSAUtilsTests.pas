@@ -10,16 +10,31 @@ type
   TDSAUtilTest = class(TTestCase)
   strict private
     FDSAUtil: TDSAUtil;
+  private
+    function  LoadBufferFromFile(const AFile: string): TBytes;
   public
     procedure SetUp; override;
     procedure TearDown; override;
   published
-    procedure TestSignVerify;
+    procedure TestSignVerifyBuffer;
+    procedure TestSignVerifyFile;
   end;
 
 implementation
 
 { TDSAUtilTest }
+
+function TDSAUtilTest.LoadBufferFromFile(const AFile: string): TBytes;
+begin
+  with TFileStream.Create(AFile, fmOpenRead or fmShareDenyWrite) do
+  try
+    SetLength(Result, Size);
+    Position := 0;
+    ReadBuffer(Pointer(Result)^, Size);
+  finally
+    Free;
+  end;
+end;
 
 procedure TDSAUtilTest.SetUp;
 begin
@@ -33,7 +48,24 @@ begin
   FreeAndNil(FDSAUtil);
 end;
 
-procedure TDSAUtilTest.TestSignVerify;
+procedure TDSAUtilTest.TestSignVerifyBuffer;
+var
+  B, D, S: TBytes;
+  F: string;
+begin
+  F := GetModuleName(HInstance);
+  D := LoadBufferFromFile(F);
+
+  B := LoadBufferFromFile('..\TestData\dsa_priv.pem');
+  FDSAUtil.PrivateKey.LoadFromBuffer(B);
+  S := FDSAUtil.PrivateSign(D);
+
+  B := LoadBufferFromFile('..\TestData\dsa_pub.pem');
+  FDSAUtil.PublicKey.LoadFromBuffer(B);
+  FDSAUtil.PublicVerify(D, S);
+end;
+
+procedure TDSAUtilTest.TestSignVerifyFile;
 var
   F, S: string;
 begin
