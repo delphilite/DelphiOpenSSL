@@ -40,6 +40,9 @@ type
     function  GetDSA: PDSA;
     procedure FreeDSA;
   public
+    constructor Create; override;
+    destructor Destroy; override;
+
     function  IsValid: Boolean;
     function  Print: string;
 
@@ -60,26 +63,7 @@ type
     procedure LoadFromBuffer(const AData: TBytes); override;
   end;
 
-  // Certificate containing an DSA public key
-  TDSACerificate = class(TOpenSSLBase)
-  private
-    FBuffer: TBytes;
-    FPublicDSA: PDSA;
-    FX509: pX509;
-  private
-    function  GetPublicDSA: PDSA;
-    procedure FreeDSA;
-    procedure FreeX509;
-  public
-    constructor Create; override;
-    destructor Destroy; override;
-
-    function  IsValid: Boolean;
-    function  Print: string;
-    procedure LoadFromFile(const FileName: string);
-    procedure LoadFromStream(AStream: TStream);
-  end;
-
+  // DSA sign/verify
   TDSAUtil = class(TOpenSSLBase)
   private
     FPublicKey: TDSAPublicKey;
@@ -240,108 +224,19 @@ begin
     RaiseOpenSSLError('DSA operation error');
 end;
 
-{ TDSACerificate }
-
-constructor TDSACerificate.Create;
-begin
-  inherited;
-  FPublicDSA := nil;
-end;
-
-destructor TDSACerificate.Destroy;
-begin
-  FreeDSA;
-  FreeX509;
-  inherited;
-end;
-
-procedure TDSACerificate.FreeDSA;
-begin
-  if FPublicDSA <> nil then
-  begin
-    DSA_free(FPublicDSA);
-    FPublicDSA := nil;
-  end;
-end;
-
-procedure TDSACerificate.FreeX509;
-begin
-  if FX509 <> nil then
-    X509_free(FX509);
-end;
-
-function TDSACerificate.GetPublicDSA: PDSA;
-var
-  Key: pEVP_PKEY;
-begin
-  if not Assigned(FPublicDSA) then
-  begin
-    Key := X509_get_pubkey(FX509);
-    try
-      FPublicDSA := EVP_PKEY_get1_DSA(Key);
-      if not Assigned(FPublicDSA) then
-        RaiseOpenSSLError('X501 unable to read public key');
-    finally
-      EVP_PKEY_free(Key);
-    end;
-  end;
-
-  Result := FPublicDSA;
-end;
-
-function TDSACerificate.IsValid: Boolean;
-begin
-  Result := Assigned(FX509);
-end;
-
-procedure TDSACerificate.LoadFromFile(const FileName: string);
-var
-  Stream: TStream;
-begin
-  Stream := TFileStream.Create(FileName, fmOpenRead or fmShareDenyWrite);
-  try
-    Self.LoadFromStream(Stream);
-  finally
-    Stream.Free;
-  end;
-end;
-
-procedure TDSACerificate.LoadFromStream(AStream: TStream);
-var
-  KeyFile: pBIO;
-begin
-  FreeDSA;
-  FreeX509;
-
-  SetLength(FBuffer, AStream.Size);
-  AStream.ReadBuffer(FBuffer[0], AStream.Size);
-  KeyFile := BIO_new_mem_buf(FBuffer, Length(FBuffer));
-  if KeyFile = nil then
-    RaiseOpenSSLError('X509 load stream error');
-  try
-    FX509 := PEM_read_bio_X509(KeyFile, nil, nil, nil);
-    if not Assigned(FX509) then
-      RaiseOpenSSLError('X509 load certificate error');
-  finally
-    BIO_free(KeyFile);
-  end;
-end;
-
-function TDSACerificate.Print: string;
-var
-  bp: PBIO;
-begin
-  bp := BIO_new(BIO_s_mem());
-  try
-    if DSA_print(bp, GetPublicDSA, 0) = 0 then
-      RaiseOpenSSLError('DSA_print');
-    Result := BIO_to_string(bp);
-  finally
-    BIO_free(bp);
-  end;
-end;
-
 { TDSAKey }
+
+constructor TDSAKey.Create;
+begin
+  inherited;
+  FDSA := nil;
+end;
+
+destructor TDSAKey.Destroy;
+begin
+  FreeDSA;
+  inherited;
+end;
 
 procedure TDSAKey.FreeDSA;
 begin

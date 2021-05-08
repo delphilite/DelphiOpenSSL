@@ -30,7 +30,7 @@ unit OpenSSL.HashUtils;
 interface
 
 uses
-  System.SysUtils, OpenSSL.Api_11, OpenSSL.Core;
+  System.SysUtils, System.Classes, OpenSSL.Api_11, OpenSSL.Core;
 
 type
   THashUtil = class(TOpenSSLBase)
@@ -39,12 +39,16 @@ type
     procedure Init; virtual; abstract;
     // update the Hash context with some data
     procedure Update(ABuffer: Pointer; ASize: integer); virtual; abstract;
+    // update the Hash context with stream data
+    procedure UpdateStream(AStream: TStream; const ACount: Int64 = 0);
     // finalize and compute the resulting Hash hash Digest of all data
     // affected to Update() method
     procedure Final(out ADigest: TBytes); virtual; abstract;
   public
-    // portal
-    class function Execute(const AData: TBytes): TBytes;
+    // portal for stream
+    class function Execute(AStream: TStream; const ACount: Int64 = 0): TBytes; overload;
+    // portal for bytes
+    class function Execute(const AData: TBytes): TBytes; overload;
   end;
 
   // handle MD4 hashing
@@ -119,6 +123,9 @@ type
 
 implementation
 
+uses
+  System.Math;
+
 { THashUtil }
 
 class function THashUtil.Execute(const AData: TBytes): TBytes;
@@ -130,6 +137,39 @@ begin
     Final(Result);
   finally
     Free;
+  end;
+end;
+
+class function THashUtil.Execute(AStream: TStream; const ACount: Int64): TBytes;
+begin
+  with Self.Create do
+  try
+    Init;
+    UpdateStream(AStream, ACount);
+    Final(Result);
+  finally
+    Free;
+  end;
+end;
+
+procedure THashUtil.UpdateStream(AStream: TStream; const ACount: Int64);
+const
+  defBufferSize = 1024 * 1024; { 1m }
+var
+  B: TBytes;
+  L, R: Integer;
+  C: Int64;
+begin
+  if ACount = 0 then
+    C := AStream.Size - AStream.Position
+  else C := Min(ACount, AStream.Size - AStream.Position);
+  SetLength(B, defBufferSize);
+  while C > 0 do
+  begin
+    L := Min(C, defBufferSize);
+    R := AStream.Read(Pointer(B)^, L);
+    Update(Pointer(B), R);
+    Dec(C, R);
   end;
 end;
 
