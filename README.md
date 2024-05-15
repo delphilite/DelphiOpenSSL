@@ -25,8 +25,8 @@
 
 ```delphi
 var
-  RSAUtil :TRSAUtil;
-  Cerificate :TX509Cerificate;
+  RSAUtil: TRSAUtil;
+  Cerificate: TX509Cerificate;
 begin
   RSAUtil := TRSAUtil.Create;
   try
@@ -54,7 +54,7 @@ end;
 
 ```delphi
 var
-  RSAUtil :TRSAUtil;
+  RSAUtil: TRSAUtil;
 begin
   RSAUtil := TRSAUtil.Create;
   try
@@ -77,7 +77,7 @@ end;
 
 ```delphi
 var
-  RSAUtil :TRSAUtil;
+  RSAUtil: TRSAUtil;
 begin
   RSAUtil := TRSAUtil.Create;
   try
@@ -101,7 +101,7 @@ end;
 
 ```delphi
 var
-  EncUtil :TEncUtil;
+  EncUtil: TEncUtil;
 begin
   EncUtil := TEncUtil.Create;
   try

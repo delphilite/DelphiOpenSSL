@@ -10,7 +10,6 @@ uses
   OpenSSL.Api_11 in '..\..\Source\OpenSSL.Api_11.pas',
   OpenSSL.EncUtils in '..\..\Source\OpenSSL.EncUtils.pas',
   OpenSSL.RandUtils in '..\..\Source\OpenSSL.RandUtils.pas',
-  OpenSSL.RSAUtils in '..\..\Source\OpenSSL.RSAUtils.pas',
   OpenSSL.SMIMEUtils in '..\..\Source\OpenSSL.SMIMEUtils.pas',
 
   OpenSSL.Core in '..\..\Source\OpenSSL.Core.pas',
@@ -20,11 +19,15 @@ uses
   OpenSSL.HashUtilsTests in 'OpenSSL.HashUtilsTests.pas',
 
   OpenSSL.DSAUtils in '..\..\Source\OpenSSL.DSAUtils.pas',
-  OpenSSL.DSAUtilsTests in 'OpenSSL.DSAUtilsTests.pas';
+  OpenSSL.DSAUtilsTests in 'OpenSSL.DSAUtilsTests.pas',
+
+  OpenSSL.RSAUtils in '..\..\Source\OpenSSL.RSAUtils.pas',
+  OpenSSL.RSAUtilsTests in 'OpenSSL.RSAUtilsTests.pas';
 
 {$R *.RES}
 
 begin
+  ReportMemoryLeaksOnShutdown := True;
   DUnitTestRunner.RunRegisteredTests;
 end.
 

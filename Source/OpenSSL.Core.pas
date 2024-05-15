@@ -3,6 +3,8 @@
 {  Delphi OPENSSL Library                                                      }
 {  Copyright (c) 2016 Luca Minuti                                              }
 {  https://bitbucket.org/lminuti/delphi-openssl                                }
+{  Copyright (c) 2024 Lsuper                                                   }
+{  https://github.com/delphilite/DelphiOpenSSL                                 }
 {                                                                              }
 {******************************************************************************}
 {                                                                              }
@@ -26,6 +28,9 @@ interface
 
 uses
   System.SysUtils, OpenSSL.Api_11;
+
+const
+  SSL_API_SUCCESS       = 1;
 
 type
   EOpenSSL = class(Exception);

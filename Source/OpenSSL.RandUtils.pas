@@ -111,7 +111,7 @@ var
   ErrCode: Integer;
 begin
   ErrCode := RAND_poll();
-  if ErrCode <> 1 then
+  if ErrCode <> SSL_API_SUCCESS then
     RaiseOpenSSLError('RAND_poll error');
 end;
 

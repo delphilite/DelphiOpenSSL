@@ -106,23 +106,23 @@ end;
 function TDSAUtil.PrivateSign(const Input: TBytes): TBytes;
 var
   Output: TBytes;
-  OutLen, Ret: Integer;
+  Len, Ret: Integer;
 begin
   if not PrivateKey.IsValid then
-    raise Exception.Create('Private key not assigned');
+    raise Exception.Create('DSA prikey not assigned');
   if (Input = nil) or (Length(Input) = 0) then
   begin
     Result := nil;
     Exit;
   end;
-  OutLen := 1024; { DSA_size(FPrivateKey.GetDSA) }
-  SetLength(Output, OutLen);
-  Ret := DSA_sign(0, PByte(Input), Length(Input), PByte(Output), @OutLen, FPrivateKey.GetDSA);
-  if Ret <> 1 then
+  Len := 1024; { DSA_size(FPrivateKey.GetDSA) }
+  SetLength(Output, Len);
+  Ret := DSA_sign(0, PByte(Input), Length(Input), PByte(Output), @Len, FPrivateKey.GetDSA);
+  if Ret <> SSL_API_SUCCESS then
     RaiseOpenSSLError('DSA sign error');
-  if OutLen <= 0 then
+  if Len <= 0 then
     RaiseOpenSSLError('DSA operation error');
-  Result := Copy(Output, 0, OutLen);
+  Result := Copy(Output, 0, Len);
 end;
 
 procedure TDSAUtil.PrivateSign(const InputFileName, OutputFileName: TFileName);
@@ -146,27 +146,27 @@ procedure TDSAUtil.PrivateSign(InputStream, OutputStream: TStream);
 var
   InputBuffer: TBytes;
   OutputBuffer: TBytes;
-  Ret, DSAOutLen: Integer;
+  Len, Ret: Integer;
 begin
   if not PrivateKey.IsValid then
-    raise Exception.Create('Private key not assigned');
+    raise Exception.Create('DSA prikey not assigned');
 
   SetLength(InputBuffer, InputStream.Size);
   InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
 
-  DSAOutLen := 1024; { DSA_size(FPrivateKey.GetDSA) }
-  SetLength(OutputBuffer, DSAOutLen);
+  Len := 1024; { DSA_size(FPrivateKey.GetDSA) }
+  SetLength(OutputBuffer, Len);
 
-  Ret := DSA_sign(0, PByte(InputBuffer), Length(InputBuffer), PByte(OutputBuffer), @DSAOutLen, FPrivateKey.GetDSA);
-  if Ret <> 1 then
+  Ret := DSA_sign(0, PByte(InputBuffer), Length(InputBuffer), PByte(OutputBuffer), @Len, FPrivateKey.GetDSA);
+  if Ret <> SSL_API_SUCCESS then
     RaiseOpenSSLError('DSA sign error');
 
-  SetLength(OutputBuffer, DSAOutLen);
+  SetLength(OutputBuffer, Len);
 
-  if DSAOutLen <= 0 then
+  if Len <= 0 then
     RaiseOpenSSLError('DSA operation error');
 
-  OutputStream.Write(OutputBuffer[0], DSAOutLen);
+  OutputStream.Write(OutputBuffer[0], Len);
 end;
 
 function TDSAUtil.PublicVerify(const Input, Output: TBytes): Boolean;
@@ -174,7 +174,7 @@ var
   Ret: Integer;
 begin
   if not PublicKey.IsValid then
-    raise Exception.Create('Public key not assigned');
+    raise Exception.Create('DSA pubkey not assigned');
   if (Input = nil) or (Length(Input) = 0) then
   begin
     Result := Length(Output) = 0;
@@ -210,7 +210,7 @@ var
   Ret: Integer;
 begin
   if not PublicKey.IsValid then
-    raise Exception.Create('Public key not assigned');
+    raise Exception.Create('DSA pubkey not assigned');
 
   SetLength(InputBuffer, InputStream.Size);
   InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
@@ -285,7 +285,7 @@ begin
   bp := BIO_new(BIO_s_mem());
   try
     if DSA_print(bp, FDSA, 0) = 0 then
-      RaiseOpenSSLError('DSA_print');
+      RaiseOpenSSLError('DSA print error');
     Result := BIO_to_string(bp);
   finally
     BIO_free(bp);

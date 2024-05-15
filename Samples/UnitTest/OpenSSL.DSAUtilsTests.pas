@@ -10,8 +10,6 @@ type
   TDSAUtilTest = class(TTestCase)
   strict private
     FDSAUtil: TDSAUtil;
-  private
-    function  LoadBufferFromFile(const AFile: string): TBytes;
   public
     procedure SetUp; override;
     procedure TearDown; override;
@@ -22,19 +20,10 @@ type
 
 implementation
 
-{ TDSAUtilTest }
+uses
+  OpenSSL.CoreTests;
 
-function TDSAUtilTest.LoadBufferFromFile(const AFile: string): TBytes;
-begin
-  with TFileStream.Create(AFile, fmOpenRead or fmShareDenyWrite) do
-  try
-    SetLength(Result, Size);
-    Position := 0;
-    ReadBuffer(Pointer(Result)^, Size);
-  finally
-    Free;
-  end;
-end;
+{ TDSAUtilTest }
 
 procedure TDSAUtilTest.SetUp;
 begin

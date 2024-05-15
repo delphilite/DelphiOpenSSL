@@ -51,11 +51,13 @@ type
     constructor Create; reintroduce;
     destructor Destroy; override;
 
-    function Count: Integer;
-    function GetProc(const Name: TCipherName): TCipherProc;
+    function  Count: Integer;
+    function  GetProc(const Name: TCipherName): TCipherProc;
   end;
 
-  TPassphraseType = (ptNone, ptPassword, ptKeys);
+  TPassphraseType = (
+    ptNone, ptPassword, ptKeys
+  );
 
   TPassphrase = record
   private
@@ -64,16 +66,16 @@ type
     FKey: TBytes;
     FInitVector: TBytes;
   public
-    class operator Implicit(const Value: string): TPassphrase;
-    class operator Implicit(const Value: TBytes): TPassphrase;
     constructor Create(const Key, InitVector: TBytes); overload;
     constructor Create(const Password: string; Encoding: TEncoding); overload;
+  public
+    class operator Implicit(const Value: string): TPassphrase;
+    class operator Implicit(const Value: TBytes): TPassphrase;
   end;
 
   TEncUtil = class(TOpenSSLBase)
   private
-    class var
-    FCipherList: TCipherList;
+    class var FCipherList: TCipherList;
     class constructor Create;
     class destructor Destroy;
   private
@@ -88,19 +90,21 @@ type
     class procedure SupportedCiphers(Ciphers: TStrings);
   public
     constructor Create; override;
-    // will be encoded in UTF8
-    property Passphrase: TPassphrase read FPassphrase write FPassphrase;
-
-    // Encryption algorithm
-    property Cipher: TCipherName read FCipher write SetCipher;
-
-    // Apply a further base64 encoding to the encrypted buffer
-    property UseBase64: Boolean read FBase64 write FBase64;
 
     procedure Encrypt(InputStream: TStream; OutputStream: TStream); overload;
-    procedure Encrypt(const InputFileName, OutputFileName: TFileName); overload;
     procedure Decrypt(InputStream: TStream; OutputStream: TStream); overload;
+
+    procedure Encrypt(const InputFileName, OutputFileName: TFileName); overload;
     procedure Decrypt(const InputFileName, OutputFileName: TFileName); overload;
+
+    // will be encoded in UTF8
+    property  Passphrase: TPassphrase read FPassphrase write FPassphrase;
+
+    // Encryption algorithm
+    property  Cipher: TCipherName read FCipher write SetCipher;
+
+    // Apply a further base64 encoding to the encrypted buffer
+    property  UseBase64: Boolean read FBase64 write FBase64;
   end;
 
 implementation
@@ -178,16 +182,16 @@ begin
 
   try
 
-    if EVP_DecryptInit_ex(Context, Cipher, nil, @Key[0], @InitVector[0]) <> 1 then
+    if EVP_DecryptInit_ex(Context, Cipher, nil, @Key[0], @InitVector[0]) <> SSL_API_SUCCESS then
       RaiseOpenSSLError('Cannot initialize decryption process');
 
     SetLength(OutputBuffer, InputStream.Size);
     BuffStart := 0;
-    if EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> 1 then
+    if EVP_DecryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[InputStart], Length(InputBuffer) - InputStart) <> SSL_API_SUCCESS then
       RaiseOpenSSLError('Cannot decrypt');
     Inc(BuffStart, OutputLen);
 
-    if EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> 1 then
+    if EVP_DecryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> SSL_API_SUCCESS then
       RaiseOpenSSLError('Cannot finalize decryption process');
     Inc(BuffStart, OutputLen);
 
@@ -244,7 +248,7 @@ begin
     RaiseOpenSSLError('Cannot initialize context');
 
   try
-    if EVP_EncryptInit_ex(Context, cipher, nil, @Key[0], @InitVector[0]) <> 1 then
+    if EVP_EncryptInit_ex(Context, cipher, nil, @Key[0], @InitVector[0]) <> SSL_API_SUCCESS then
       RaiseOpenSSLError('Cannot initialize encryption process');
 
     BlockSize := EVP_CIPHER_CTX_block_size(Context);
@@ -259,11 +263,11 @@ begin
     else
       SetLength(OutputBuffer, Length(InputBuffer) + BlockSize);
 
-    if EVP_EncryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[0], Length(InputBuffer)) <> 1 then
+    if EVP_EncryptUpdate(Context, @OutputBuffer[BuffStart], @OutputLen, @InputBuffer[0], Length(InputBuffer)) <> SSL_API_SUCCESS then
       RaiseOpenSSLError('Cannot encrypt');
     Inc(BuffStart, OutputLen);
 
-    if EVP_EncryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> 1 then
+    if EVP_EncryptFinal_ex(Context, @OutputBuffer[BuffStart], @OutputLen) <> SSL_API_SUCCESS then
       RaiseOpenSSLError('Cannot finalize encryption process');
     Inc(BuffStart, OutputLen);
     SetLength(OutputBuffer, BuffStart);
@@ -315,93 +319,91 @@ class procedure TEncUtil.RegisterDefaultCiphers;
 begin
   if FCipherList.Count = 0 then
   begin
+    // AES
+    RegisterCipher('AES', EVP_aes_256_cbc);
+    RegisterCipher('AES-128', EVP_aes_128_cbc);
+    RegisterCipher('AES-192', EVP_aes_192_cbc);
+    RegisterCipher('AES-256', EVP_aes_256_cbc);
 
-  // AES
-  RegisterCipher('AES', EVP_aes_256_cbc);
-  RegisterCipher('AES-128', EVP_aes_128_cbc);
-  RegisterCipher('AES-192', EVP_aes_192_cbc);
-  RegisterCipher('AES-256', EVP_aes_256_cbc);
+    RegisterCipher('AES-CBC', EVP_aes_256_cbc);
+    RegisterCipher('AES-128-CBC', EVP_aes_128_cbc);
+    RegisterCipher('AES-192-CBC', EVP_aes_192_cbc);
+    RegisterCipher('AES-256-CBC', EVP_aes_256_cbc);
 
-  RegisterCipher('AES-CBC', EVP_aes_256_cbc);
-  RegisterCipher('AES-128-CBC', EVP_aes_128_cbc);
-  RegisterCipher('AES-192-CBC', EVP_aes_192_cbc);
-  RegisterCipher('AES-256-CBC', EVP_aes_256_cbc);
+    RegisterCipher('AES-CFB', EVP_aes_256_cfb128);
+    RegisterCipher('AES-128-CFB', EVP_aes_128_cfb128);
+    RegisterCipher('AES-192-CFB', EVP_aes_192_cfb128);
+    RegisterCipher('AES-256-CFB', EVP_aes_256_cfb128);
 
-  RegisterCipher('AES-CFB', EVP_aes_256_cfb128);
-  RegisterCipher('AES-128-CFB', EVP_aes_128_cfb128);
-  RegisterCipher('AES-192-CFB', EVP_aes_192_cfb128);
-  RegisterCipher('AES-256-CFB', EVP_aes_256_cfb128);
+    RegisterCipher('AES-CFB1', EVP_aes_256_cfb1);
+    RegisterCipher('AES-128-CFB1', EVP_aes_128_cfb1);
+    RegisterCipher('AES-192-CFB1', EVP_aes_192_cfb1);
+    RegisterCipher('AES-256-CFB1', EVP_aes_256_cfb1);
 
-  RegisterCipher('AES-CFB1', EVP_aes_256_cfb1);
-  RegisterCipher('AES-128-CFB1', EVP_aes_128_cfb1);
-  RegisterCipher('AES-192-CFB1', EVP_aes_192_cfb1);
-  RegisterCipher('AES-256-CFB1', EVP_aes_256_cfb1);
+    RegisterCipher('AES-CFB8', EVP_aes_256_cfb8);
+    RegisterCipher('AES-128-CFB8', EVP_aes_128_cfb8);
+    RegisterCipher('AES-192-CFB8', EVP_aes_192_cfb8);
+    RegisterCipher('AES-256-CFB8', EVP_aes_256_cfb8);
 
-  RegisterCipher('AES-CFB8', EVP_aes_256_cfb8);
-  RegisterCipher('AES-128-CFB8', EVP_aes_128_cfb8);
-  RegisterCipher('AES-192-CFB8', EVP_aes_192_cfb8);
-  RegisterCipher('AES-256-CFB8', EVP_aes_256_cfb8);
+    RegisterCipher('AES-ECB', EVP_aes_256_ecb);
+    RegisterCipher('AES-128-ECB', EVP_aes_128_ecb);
+    RegisterCipher('AES-192-ECB', EVP_aes_192_ecb);
+    RegisterCipher('AES-256-ECB', EVP_aes_256_ecb);
 
-  RegisterCipher('AES-ECB', EVP_aes_256_ecb);
-  RegisterCipher('AES-128-ECB', EVP_aes_128_ecb);
-  RegisterCipher('AES-192-ECB', EVP_aes_192_ecb);
-  RegisterCipher('AES-256-ECB', EVP_aes_256_ecb);
+    RegisterCipher('AES-OFB', EVP_aes_256_ofb);
+    RegisterCipher('AES-128-OFB', EVP_aes_128_ofb);
+    RegisterCipher('AES-192-OFB', EVP_aes_192_ofb);
+    RegisterCipher('AES-256-OFB', EVP_aes_256_ofb);
 
-  RegisterCipher('AES-OFB', EVP_aes_256_ofb);
-  RegisterCipher('AES-128-OFB', EVP_aes_128_ofb);
-  RegisterCipher('AES-192-OFB', EVP_aes_192_ofb);
-  RegisterCipher('AES-256-OFB', EVP_aes_256_ofb);
+    // Blowfish
+    RegisterCipher('BF', EVP_bf_cbc);
+    RegisterCipher('BF-CBC', EVP_bf_cbc);
+    RegisterCipher('BF-ECB', EVP_bf_ecb);
+    RegisterCipher('BF-CBF', EVP_bf_cfb64);
+    RegisterCipher('BF-OFB', EVP_bf_ofb);
 
-  // Blowfish
-  RegisterCipher('BF', EVP_bf_cbc);
-  RegisterCipher('BF-CBC', EVP_bf_cbc);
-  RegisterCipher('BF-ECB', EVP_bf_ecb);
-  RegisterCipher('BF-CBF', EVP_bf_cfb64);
-  RegisterCipher('BF-OFB', EVP_bf_ofb);
+    // DES
+    RegisterCipher('DES-CBC', EVP_des_cbc);
+    RegisterCipher('DES', EVP_des_cbc);
+    RegisterCipher('DES-CFB', EVP_des_cfb64);
+    RegisterCipher('DES-OFB', EVP_des_ofb);
+    RegisterCipher('DES-ECB', EVP_des_ecb);
 
-  // DES
-  RegisterCipher('DES-CBC', EVP_des_cbc);
-  RegisterCipher('DES', EVP_des_cbc);
-  RegisterCipher('DES-CFB', EVP_des_cfb64);
-  RegisterCipher('DES-OFB', EVP_des_ofb);
-  RegisterCipher('DES-ECB', EVP_des_ecb);
+    // Two key triple DES EDE
+    RegisterCipher('DES-EDE-CBC', EVP_des_ede_cbc);
+    RegisterCipher('DES-EDE', EVP_des_ede);
+    RegisterCipher('DES-EDE-CFB', EVP_des_ede_cfb64);
+    RegisterCipher('DES-EDE-OFB', EVP_des_ede_ofb);
 
-  // Two key triple DES EDE
-  RegisterCipher('DES-EDE-CBC', EVP_des_ede_cbc);
-  RegisterCipher('DES-EDE', EVP_des_ede);
-  RegisterCipher('DES-EDE-CFB', EVP_des_ede_cfb64);
-  RegisterCipher('DES-EDE-OFB', EVP_des_ede_ofb);
+    // Two key triple DES EDE
+    RegisterCipher('DES-EDE3-CBC', EVP_des_ede3_cbc);
+    RegisterCipher('DES-EDE3', EVP_des_ede3);
+    RegisterCipher('DES3', EVP_des_ede3);
+    RegisterCipher('DES-EDE3-CFB', EVP_des_ede3_cfb64);
+    RegisterCipher('DES-EDE3-OFB', EVP_des_ede3_ofb);
 
-  // Two key triple DES EDE
-  RegisterCipher('DES-EDE3-CBC', EVP_des_ede3_cbc);
-  RegisterCipher('DES-EDE3', EVP_des_ede3);
-  RegisterCipher('DES3', EVP_des_ede3);
-  RegisterCipher('DES-EDE3-CFB', EVP_des_ede3_cfb64);
-  RegisterCipher('DES-EDE3-OFB', EVP_des_ede3_ofb);
+    // DESX algorithm
+    RegisterCipher('DESX', EVP_desx_cbc);
 
-  // DESX algorithm
-  RegisterCipher('DESX', EVP_desx_cbc);
+    // IDEA algorithm
+    RegisterCipher('IDEA-CBC', EVP_idea_cbc);
+    RegisterCipher('IDEA', EVP_idea_cbc);
+    RegisterCipher('IDEA-CFB', EVP_idea_cfb64);
+    RegisterCipher('IDEA-ECB', EVP_idea_ecb);
+    RegisterCipher('IDEA-OFB', EVP_idea_ofb);
 
-  // IDEA algorithm
-  RegisterCipher('IDEA-CBC', EVP_idea_cbc);
-  RegisterCipher('IDEA', EVP_idea_cbc);
-  RegisterCipher('IDEA-CFB', EVP_idea_cfb64);
-  RegisterCipher('IDEA-ECB', EVP_idea_ecb);
-  RegisterCipher('IDEA-OFB', EVP_idea_ofb);
+    // RC2
+    RegisterCipher('RC2-CBC', EVP_rc2_cbc);
+    RegisterCipher('RC2', EVP_rc2_cbc);
+    RegisterCipher('RC2-CFB', EVP_rc2_cfb64);
+    RegisterCipher('RC2-ECB', EVP_rc2_ecb);
+    RegisterCipher('RC2-OFB', EVP_rc2_ofb);
+    RegisterCipher('RC2-64-CBC', nil);
+    RegisterCipher('RC2-40-CBC', nil);
 
-  // RC2
-  RegisterCipher('RC2-CBC', EVP_rc2_cbc);
-  RegisterCipher('RC2', EVP_rc2_cbc);
-  RegisterCipher('RC2-CFB', EVP_rc2_cfb64);
-  RegisterCipher('RC2-ECB', EVP_rc2_ecb);
-  RegisterCipher('RC2-OFB', EVP_rc2_ofb);
-  RegisterCipher('RC2-64-CBC', nil);
-  RegisterCipher('RC2-40-CBC', nil);
-
-  // RC4
-  RegisterCipher('RC4', EVP_rc4);
-  RegisterCipher('RC4-40', EVP_rc4_40);
-
+    // RC4
+    RegisterCipher('RC4', EVP_rc4);
+    RegisterCipher('RC4-40', EVP_rc4_40);
   end;
 end;
 

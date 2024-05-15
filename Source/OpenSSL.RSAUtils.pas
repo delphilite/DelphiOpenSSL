@@ -3,6 +3,8 @@
 {  Delphi OPENSSL Library                                                      }
 {  Copyright (c) 2016 Luca Minuti                                              }
 {  https://bitbucket.org/lminuti/delphi-openssl                                }
+{  Copyright (c) 2024 Lsuper                                                   }
+{  https://github.com/delphilite/DelphiOpenSSL                                 }
 {                                                                              }
 {******************************************************************************}
 {                                                                              }
@@ -53,17 +55,21 @@ type
     FBuffer: TBytes;
     FCerificate: TX509Cerificate;
   protected
-    function GetRSA: PRSA; virtual; abstract;
+    function  GetRSA: PRSA; virtual; abstract;
     procedure FreeRSA; virtual; abstract;
   public
     constructor Create; override;
     destructor Destroy; override;
-    function Print: string;
-    function IsValid: Boolean;
-    procedure LoadFromFile(const FileName: string; AFormat: TPublicKeyFormat = kfDefault); virtual;
-    procedure LoadFromStream(AStream: TStream; AFormat: TPublicKeyFormat = kfDefault); virtual;
+
+    function  Print: string;
+    function  IsValid: Boolean;
+
     procedure LoadFromCertificate(Cerificate: TX509Cerificate);
-    procedure SaveToFile(const FileName: string; AFormat: TPublicKeyFormat = kfDefault); virtual;
+
+    procedure LoadFromFile(const FileName: string; AFormat: TPublicKeyFormat = kfDefault);
+    procedure SaveToFile(const FileName: string; AFormat: TPublicKeyFormat = kfDefault);
+
+    procedure LoadFromStream(AStream: TStream; AFormat: TPublicKeyFormat = kfDefault); virtual;
     procedure SaveToStream(AStream: TStream; AFormat: TPublicKeyFormat = kfDefault); virtual;
   end;
 
@@ -71,10 +77,11 @@ type
   private
     FRSA: PRSA;
   protected
+    function  GetRSA: PRSA; override;
     procedure FreeRSA; override;
-    function GetRSA: PRSA; override;
   public
     constructor Create; override;
+
     procedure LoadFromStream(AStream: TStream; AFormat: TPublicKeyFormat = kfDefault); override;
   end;
 
@@ -84,28 +91,33 @@ type
     FBuffer: TBytes;
     FOnNeedPassphrase: TPassphraseEvent;
   protected
-    function GetRSA: PRSA; virtual; abstract;
+    function  GetRSA: PRSA; virtual; abstract;
     procedure FreeRSA; virtual; abstract;
   public
     constructor Create; override;
     destructor Destroy; override;
-    function IsValid: Boolean;
-    function Print: string;
-    procedure LoadFromFile(const FileName: string; AFormat: TPrivateKeyFormat = kpDefault); virtual;
+
+    function  IsValid: Boolean;
+    function  Print: string;
+
+    procedure LoadFromFile(const FileName: string; AFormat: TPrivateKeyFormat = kpDefault);
+    procedure SaveToFile(const FileName: string; AFormat: TPrivateKeyFormat = kpDefault);
+
     procedure LoadFromStream(AStream: TStream; AFormat: TPrivateKeyFormat = kpDefault); virtual;
-    procedure SaveToFile(const FileName: string; AFormat: TPrivateKeyFormat = kpDefault); virtual;
     procedure SaveToStream(AStream: TStream; AFormat: TPrivateKeyFormat = kpDefault); virtual;
-    property OnNeedPassphrase: TPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
+
+    property  OnNeedPassphrase: TPassphraseEvent read FOnNeedPassphrase write FOnNeedPassphrase;
   end;
 
   TRSAPrivateKey = class(TCustomRSAPrivateKey)
   private
     FRSA: PRSA;
   protected
+    function  GetRSA: PRSA; override;
     procedure FreeRSA; override;
-    function GetRSA: PRSA; override;
   public
     constructor Create; override;
+
     procedure LoadFromStream(AStream: TStream; AFormat: TPrivateKeyFormat = kpDefault); override;
   end;
 
@@ -115,15 +127,17 @@ type
     FBuffer: TBytes;
     FPublicRSA: PRSA;
     FX509: pX509;
+  private
+    function  GetPublicRSA: PRSA;
     procedure FreeRSA;
     procedure FreeX509;
-    function GetPublicRSA: PRSA;
   public
     constructor Create; override;
     destructor Destroy; override;
 
-    function IsValid: Boolean;
-    function Print: string;
+    function  IsValid: Boolean;
+    function  Print: string;
+
     procedure LoadFromFile(const FileName: string);
     procedure LoadFromStream(AStream: TStream);
   end;
@@ -133,35 +147,52 @@ type
     FRSA: PRSA;
     FPrivateKey: TCustomRSAPrivateKey;
     FPublicKey: TCustomRSAPublicKey;
+  private
     procedure FreeRSA;
   public
-    property PrivateKey: TCustomRSAPrivateKey read FPrivateKey;
-    property PublicKey: TCustomRSAPublicKey read FPublicKey;
+    constructor Create; override;
+    destructor Destroy; override;
 
     procedure GenerateKey; overload;
     procedure GenerateKey(KeySize: Integer); overload;
-    constructor Create; override;
-    destructor Destroy; override;
+
+    property  PrivateKey: TCustomRSAPrivateKey read FPrivateKey;
+    property  PublicKey: TCustomRSAPublicKey read FPublicKey;
   end;
 
+  TRSAHashAlgorithm = (
+    haSHA256, haSHA384, haSHA512
+  );
+
   TRSAUtil = class(TOpenSSLBase)
+  private const
+    PaddingMap: array [TRSAPadding] of Integer = (RSA_PKCS1_PADDING, RSA_PKCS1_OAEP_PADDING, RSA_SSLV23_PADDING, RSA_NO_PADDING);
   private
     FPublicKey: TCustomRSAPublicKey;
     FPrivateKey: TCustomRSAPrivateKey;
     FOwnedPrivateKey: TCustomRSAPrivateKey;
     FOwnedPublicKey: TCustomRSAPublicKey;
-    procedure SetPrivateKey(const Value: TCustomRSAPrivateKey);
+  private
     procedure SetPublicKey(const Value: TCustomRSAPublicKey);
+    procedure SetPrivateKey(const Value: TCustomRSAPrivateKey);
   public
     constructor Create; override;
     destructor Destroy; override;
+
+    function  PrivateSign(const Input: TBytes; AAlg: TRSAHashAlgorithm): TBytes;
+    function  PublicVerify(const Input, Signature: TBytes; AAlg: TRSAHashAlgorithm): Boolean;
+
+    function  PublicEncrypt(const Input: TBytes; Padding: TRSAPadding = rpPKCS): TBytes; overload;
+    function  PrivateDecrypt(const Input: TBytes; Padding: TRSAPadding = rpPKCS): TBytes; overload;
+
     procedure PublicEncrypt(InputStream: TStream; OutputStream: TStream; Padding: TRSAPadding = rpPKCS); overload;
-    procedure PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding = rpPKCS); overload;
     procedure PrivateDecrypt(InputStream: TStream; OutputStream: TStream; Padding: TRSAPadding = rpPKCS); overload;
+
+    procedure PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding = rpPKCS); overload;
     procedure PrivateDecrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding = rpPKCS); overload;
 
-    property PublicKey: TCustomRSAPublicKey read FPublicKey write SetPublicKey;
-    property PrivateKey: TCustomRSAPrivateKey read FPrivateKey write SetPrivateKey;
+    property  PublicKey: TCustomRSAPublicKey read FPublicKey write SetPublicKey;
+    property  PrivateKey: TCustomRSAPrivateKey read FPrivateKey write SetPrivateKey;
   end;
 
 implementation
@@ -186,9 +217,6 @@ type
   public
     constructor Create(KeyPair: TRSAKeyPair); reintroduce;
   end;
-
-const
-  PaddingMap: array [TRSAPadding] of Integer = (RSA_PKCS1_PADDING, RSA_PKCS1_OAEP_PADDING, RSA_SSLV23_PADDING, RSA_NO_PADDING);
 
 // rwflag is a flag set to 0 when reading and 1 when writing
 // The u parameter has the same value as the u parameter passed to the PEM routines
@@ -215,28 +243,7 @@ begin
   end;
 end;
 
-procedure TRSAUtil.PublicEncrypt(InputStream, OutputStream: TStream; Padding: TRSAPadding);
-var
-  InputBuffer: TBytes;
-  OutputBuffer: TBytes;
-  RSAOutLen: Integer;
-begin
-  if not PublicKey.IsValid then
-    raise Exception.Create('Public key not assigned');
-
-  SetLength(InputBuffer, InputStream.Size);
-  InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
-
-  RSAOutLen := RSA_size(FPublicKey.GetRSA);
-  SetLength(OutputBuffer, RSAOutLen);
-
-  RSAOutLen := RSA_public_encrypt(Length(InputBuffer), PByte(InputBuffer), PByte(OutputBuffer), FPublicKey.GetRSA, PaddingMap[Padding]);
-
-  if RSAOutLen <= 0 then
-    RaiseOpenSSLError('RSA operation error');
-
-  OutputStream.Write(OutputBuffer[0], RSAOutLen);
-end;
+{ TRSAUtil }
 
 constructor TRSAUtil.Create;
 begin
@@ -255,32 +262,21 @@ begin
   inherited;
 end;
 
-procedure TRSAUtil.PrivateDecrypt(InputStream, OutputStream: TStream;
-  Padding: TRSAPadding);
+function TRSAUtil.PrivateDecrypt(const Input: TBytes; Padding: TRSAPadding): TBytes;
 var
-  InputBuffer: TBytes;
-  OutputBuffer: TBytes;
-  RSAOutLen: Integer;
+  Len: Integer;
 begin
-  if not PrivateKey.IsValid then
-    raise Exception.Create('Private key not assigned');
-
-  SetLength(InputBuffer, InputStream.Size);
-  InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
-
-  RSAOutLen := RSA_size(FPrivateKey.GetRSA);
-  SetLength(OutputBuffer, RSAOutLen);
-
-  RSAOutLen := RSA_private_decrypt(Length(InputBuffer), PByte(InputBuffer), PByte(OutputBuffer), FPrivateKey.GetRSA, PaddingMap[Padding]);
-
-  if RSAOutLen <= 0 then
-    RaiseOpenSSLError('RSA operation error');
-
-  OutputStream.Write(OutputBuffer[0], RSAOutLen);
+  if not FPrivateKey.IsValid then
+    raise Exception.Create('RSA prikey not assigned');
+  Len := RSA_size(FPrivateKey.GetRSA);
+  SetLength(Result, Len);
+  Len := RSA_private_decrypt(Length(Input), PByte(Input), PByte(Result), FPrivateKey.GetRSA, PaddingMap[Padding]);
+  if Len <= 0 then
+    RaiseOpenSSLError('RSA decrypt error');
+  SetLength(Result, Len);
 end;
 
-procedure TRSAUtil.PrivateDecrypt(const InputFileName,
-  OutputFileName: TFileName; Padding: TRSAPadding);
+procedure TRSAUtil.PrivateDecrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding);
 var
   InputFile, OutputFile: TStream;
 begin
@@ -297,8 +293,89 @@ begin
   end;
 end;
 
-procedure TRSAUtil.PublicEncrypt(const InputFileName, OutputFileName: TFileName;
-  Padding: TRSAPadding);
+procedure TRSAUtil.PrivateDecrypt(InputStream, OutputStream: TStream; Padding: TRSAPadding);
+var
+  InputBuffer: TBytes;
+  OutputBuffer: TBytes;
+  Len: Integer;
+begin
+  if not FPrivateKey.IsValid then
+    raise Exception.Create('RSA prikey not assigned');
+
+  SetLength(InputBuffer, InputStream.Size);
+  InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
+
+  Len := RSA_size(FPrivateKey.GetRSA);
+  SetLength(OutputBuffer, Len);
+
+  Len := RSA_private_decrypt(Length(InputBuffer), PByte(InputBuffer), PByte(OutputBuffer), FPrivateKey.GetRSA, PaddingMap[Padding]);
+
+  if Len <= 0 then
+    RaiseOpenSSLError('RSA decrypt error');
+
+  OutputStream.Write(OutputBuffer[0], Len);
+end;
+
+function TRSAUtil.PrivateSign(const Input: TBytes; AAlg: TRSAHashAlgorithm): TBytes;
+var
+  Ctx: PEVP_MD_CTX;
+  MD: PEVP_MD;
+  pKey: PEVP_PKEY;
+  Size: NativeUInt;
+begin
+  if not FPrivateKey.IsValid then
+    raise Exception.Create('RSA prikey not assigned');
+  if (Input = nil) or (Length(Input) = 0) then
+  begin
+    Result := nil;
+    Exit;
+  end;
+  case AAlg of
+    haSHA256: MD := EVP_sha256();
+    haSHA384: MD := EVP_sha384();
+    haSHA512: MD := EVP_sha512();
+  else
+    Assert(False);
+    MD := nil;
+  end;
+  Ctx := EVP_MD_CTX_create;
+  try
+    pKey := EVP_PKEY_new;
+    try
+      if EVP_PKEY_set1_RSA(pKey, FPrivateKey.GetRSA) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA key error');
+      if EVP_DigestSignInit(Ctx, nil, MD, nil, pKey) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA init error');
+      if EVP_DigestUpdate(Ctx, @Input[0], Length(Input)) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA digest error');
+      if EVP_DigestSignFinal(Ctx, nil, Size) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA signfinal error');
+      SetLength(Result, Size);
+      if EVP_DigestSignFinal(Ctx, @Result[0], Size) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA signfinal error');
+    finally
+      EVP_PKEY_free(pKey);
+    end;
+  finally
+    EVP_MD_CTX_destroy(Ctx);
+  end;
+end;
+
+function TRSAUtil.PublicEncrypt(const Input: TBytes; Padding: TRSAPadding): TBytes;
+var
+  Len: Integer;
+begin
+  if not FPublicKey.IsValid then
+    raise Exception.Create('RSA pubkey not assigned');
+  Len := RSA_size(FPublicKey.GetRSA);
+  SetLength(Result, Len);
+  Len := RSA_public_encrypt(Length(Input), PByte(Input), PByte(Result), FPublicKey.GetRSA, PaddingMap[Padding]);
+  if Len <= 0 then
+    RaiseOpenSSLError('RSA encrypt error');
+  SetLength(Result, Len);
+end;
+
+procedure TRSAUtil.PublicEncrypt(const InputFileName, OutputFileName: TFileName; Padding: TRSAPadding);
 var
   InputFile, OutputFile: TStream;
 begin
@@ -312,6 +389,71 @@ begin
     end;
   finally
     InputFile.Free;
+  end;
+end;
+
+procedure TRSAUtil.PublicEncrypt(InputStream, OutputStream: TStream; Padding: TRSAPadding);
+var
+  InputBuffer: TBytes;
+  OutputBuffer: TBytes;
+  Len: Integer;
+begin
+  if not FPublicKey.IsValid then
+    raise Exception.Create('RSA pubkey not assigned');
+
+  SetLength(InputBuffer, InputStream.Size);
+  InputStream.ReadBuffer(InputBuffer[0], InputStream.Size);
+
+  Len := RSA_size(FPublicKey.GetRSA);
+  SetLength(OutputBuffer, Len);
+
+  Len := RSA_public_encrypt(Length(InputBuffer), PByte(InputBuffer), PByte(OutputBuffer), FPublicKey.GetRSA, PaddingMap[Padding]);
+
+  if Len <= 0 then
+    RaiseOpenSSLError('RSA encrypt error');
+
+  OutputStream.Write(OutputBuffer[0], Len);
+end;
+
+function TRSAUtil.PublicVerify(const Input, Signature: TBytes; AAlg: TRSAHashAlgorithm): Boolean;
+var
+  Ctx: PEVP_MD_CTX;
+  MD: PEVP_MD;
+  pKey: PEVP_PKEY;
+  Ret: Integer;
+begin
+  if not FPublicKey.IsValid then
+    raise Exception.Create('RSA pubkey not assigned');
+  if (Input = nil) or (Length(Input) = 0) then
+  begin
+    Result := Length(Signature) = 0;
+    Exit;
+  end;
+  case AAlg of
+    haSHA256: MD := EVP_sha256();
+    haSHA384: MD := EVP_sha384();
+    haSHA512: MD := EVP_sha512();
+  else
+    Assert(False);
+    MD := nil;
+  end;
+  Ctx := EVP_MD_CTX_create;
+  try
+    pKey := EVP_PKEY_new;
+    try
+      if EVP_PKEY_set1_RSA(pKey, FPublicKey.GetRSA) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA key error');
+      if EVP_DigestVerifyInit(Ctx, nil, MD, nil, pKey) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA init error');
+      if EVP_DigestUpdate(Ctx, @Input[0], Length(Input)) <> SSL_API_SUCCESS then
+        RaiseOpenSSLError('RSA verify error');
+      Ret := EVP_DigestVerifyFinal(Ctx, @Signature[0], Length(Signature));
+      Result := Ret = 1;
+    finally
+      EVP_PKEY_free(pKey);
+    end;
+  finally
+    EVP_MD_CTX_destroy(Ctx);
   end;
 end;
 
@@ -357,7 +499,7 @@ end;
 
 function TX509Cerificate.GetPublicRSA: PRSA;
 var
-  Key: pEVP_PKEY;
+  Key: PEVP_PKEY;
 begin
   if not Assigned(FPublicRSA) then
   begin
@@ -365,7 +507,7 @@ begin
     try
       FPublicRSA := EVP_PKEY_get1_RSA(Key);
       if not Assigned(FPublicRSA) then
-        RaiseOpenSSLError('X501 unable to read public key');
+        RaiseOpenSSLError('X509 public key error');
     finally
       EVP_PKEY_free(Key);
     end;
@@ -377,20 +519,6 @@ end;
 function TX509Cerificate.IsValid: Boolean;
 begin
   Result := Assigned(FX509);
-end;
-
-function TX509Cerificate.Print: string;
-var
-  bp: PBIO;
-begin
-  bp := BIO_new(BIO_s_mem());
-  try
-    if RSA_print(bp, GetPublicRSA, 0) = 0 then
-      RaiseOpenSSLError('RSA_print');
-    Result := BIO_to_string(bp);
-  finally
-    BIO_free(bp);
-  end;
 end;
 
 procedure TX509Cerificate.LoadFromFile(const FileName: string);
@@ -423,6 +551,20 @@ begin
       RaiseOpenSSLError('X509 load certificate error');
   finally
     BIO_free(KeyFile);
+  end;
+end;
+
+function TX509Cerificate.Print: string;
+var
+  bp: PBIO;
+begin
+  bp := BIO_new(BIO_s_mem());
+  try
+    if RSA_print(bp, GetPublicRSA, 0) <> SSL_API_SUCCESS then
+      RaiseOpenSSLError('X509 print error');
+    Result := BIO_to_string(bp);
+  finally
+    BIO_free(bp);
   end;
 end;
 
@@ -467,8 +609,8 @@ var
 begin
   bp := BIO_new(BIO_s_mem());
   try
-    if RSA_print(bp, GetRSA, 0) = 0 then
-      RaiseOpenSSLError('RSA_print');
+    if RSA_print(bp, GetRSA, 0) <> SSL_API_SUCCESS then
+      RaiseOpenSSLError('RSA print error');
     Result := BIO_to_string(bp);
   finally
     BIO_free(bp);
@@ -488,13 +630,12 @@ begin
   end;
 end;
 
-procedure TCustomRSAPrivateKey.SaveToStream(AStream: TStream;
-  AFormat: TPrivateKeyFormat);
+procedure TCustomRSAPrivateKey.SaveToStream(AStream: TStream; AFormat: TPrivateKeyFormat);
 var
   PrivateKey: PBIO;
   KeyLength: Integer;
   Buffer: TBytes;
-  pKey: pEVP_PKEY;
+  pKey: PEVP_PKEY;
 begin
   PrivateKey := BIO_new(BIO_s_mem);
   try
@@ -548,7 +689,7 @@ begin
   FCerificate := Cerificate;
 end;
 
-procedure TCustomRSAPublicKey.LoadFromFile(const FileName: string; AFormat: TPublicKeyFormat = kfDefault);
+procedure TCustomRSAPublicKey.LoadFromFile(const FileName: string; AFormat: TPublicKeyFormat);
 var
   Stream: TStream;
 begin
@@ -571,8 +712,8 @@ var
 begin
   bp := BIO_new(BIO_s_mem());
   try
-    if RSA_print(bp, GetRSA, 0) = 0 then
-      RaiseOpenSSLError('RSA_print');
+    if RSA_print(bp, GetRSA, 0) <> SSL_API_SUCCESS then
+      RaiseOpenSSLError('RSA print error');
     Result := BIO_to_string(bp);
   finally
     BIO_free(bp);
@@ -592,17 +733,15 @@ begin
   end;
 end;
 
-procedure TCustomRSAPublicKey.SaveToStream(AStream: TStream;
-  AFormat: TPublicKeyFormat);
+procedure TCustomRSAPublicKey.SaveToStream(AStream: TStream; AFormat: TPublicKeyFormat);
 var
   PublicKey: PBIO;
   KeyLength: Integer;
   Buffer: TBytes;
-  pKey: pEVP_PKEY;
+  pKey: PEVP_PKEY;
 begin
   PublicKey := BIO_new(BIO_s_mem);
   try
-
     case AFormat of
       kfDefault: begin
         pKey := EVP_PKEY_new(); // TODO: check value
@@ -656,6 +795,13 @@ begin
   end;
 end;
 
+procedure TRSAKeyPair.GenerateKey;
+const
+  DefaultKeySize = 2048;
+begin
+  GenerateKey(DefaultKeySize);
+end;
+
 // Thanks for Allen Drennan
 // https://stackoverflow.com/questions/55229772/using-openssl-to-generate-keypairs/55239810#55239810
 procedure TRSAKeyPair.GenerateKey(KeySize: Integer);
@@ -670,10 +816,10 @@ begin
     begin
       FRSA := RSA_new;
       try
-        if BN_set_word(Bignum, RSA_F4) = 0 then
+        if BN_set_word(Bignum, RSA_F4) <> SSL_API_SUCCESS then
           RaiseOpenSSLError('BN_set_word');
 
-        if RSA_generate_key_ex(FRSA, KeySize, Bignum, nil) = 0 then
+        if RSA_generate_key_ex(FRSA, KeySize, Bignum, nil) <> SSL_API_SUCCESS then
           RaiseOpenSSLError('RSA_generate_key_ex');
       except
         FreeRSA;
@@ -683,13 +829,6 @@ begin
   finally
     BN_free(Bignum);
   end;
-end;
-
-procedure TRSAKeyPair.GenerateKey;
-const
-  DefaultKeySize = 2048;
-begin
-  GenerateKey(DefaultKeySize);
 end;
 
 { TRSAPrivateKey }
@@ -736,13 +875,13 @@ begin
 
         pKey := PEM_read_bio_PrivateKey(KeyBuffer, nil, cb, nil);
         if not Assigned(pKey) then
-          RaiseOpenSSLError('PUBKEY load public key error');
+          RaiseOpenSSLError('RSA read public key error');
 
         try
           FRSA := EVP_PKEY_get1_RSA(pKey);
 
           if not Assigned(FRSA) then
-            RaiseOpenSSLError('RSA load public key error');
+            RaiseOpenSSLError('RSA get public key error');
         finally
           EVP_PKEY_free(pKey);
         end;
@@ -750,7 +889,7 @@ begin
       kpRSAPrivateKey: begin
         FRSA := PEM_read_bio_RSAPrivateKey(KeyBuffer, nil, cb, nil);
         if not Assigned(FRSA) then
-          RaiseOpenSSLError('RSA load private key error');
+          RaiseOpenSSLError('RSA read private key error');
       end;
       else
         raise EOpenSSL.Create('Invalid format');
@@ -803,8 +942,7 @@ begin
     Result := FRSA;
 end;
 
-procedure TRSAPublicKey.LoadFromStream(AStream: TStream;
-  AFormat: TPublicKeyFormat);
+procedure TRSAPublicKey.LoadFromStream(AStream: TStream; AFormat: TPublicKeyFormat);
 var
   KeyBuffer: pBIO;
   pKey: PEVP_PKEY;
@@ -819,7 +957,7 @@ begin
       kfDefault: begin
         pKey := PEM_read_bio_PubKey(KeyBuffer, nil, nil, nil);
         if not Assigned(pKey) then
-          RaiseOpenSSLError('PUBKEY load public key error');
+          RaiseOpenSSLError('RSA read public key error');
 
         try
           FRSA := EVP_PKEY_get1_RSA(pKey);
@@ -833,7 +971,7 @@ begin
       kfRSAPublicKey: begin
         FRSA := PEM_read_bio_RSAPublicKey(KeyBuffer, nil, nil, nil);
         if not Assigned(FRSA) then
-          RaiseOpenSSLError('RSA load public key error');
+          RaiseOpenSSLError('RSA read public key error');
       end;
       else
         raise EOpenSSL.Create('Invalid format');

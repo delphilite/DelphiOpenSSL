@@ -3,7 +3,7 @@ unit OpenSSL.CoreTests;
 interface
 
 uses
-  TestFramework, System.SysUtils, System.Classes, OpenSSL.Api_11, OpenSSL.Core;
+  TestFramework, System.SysUtils, OpenSSL.Api_11, OpenSSL.Core;
 
 type
   TSSLCoreTest = class(TTestCase)
@@ -16,7 +16,24 @@ type
     procedure TestBytesToHex;
   end;
 
+  function LoadBufferFromFile(const AFile: string): TBytes;
+
 implementation
+
+uses
+  System.Classes;
+
+function LoadBufferFromFile(const AFile: string): TBytes;
+begin
+  with TFileStream.Create(AFile, fmOpenRead or fmShareDenyWrite) do
+  try
+    SetLength(Result, Size);
+    Position := 0;
+    ReadBuffer(Pointer(Result)^, Size);
+  finally
+    Free;
+  end;
+end;
 
 { TSSLCoreTest }
 
